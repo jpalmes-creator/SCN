@@ -941,7 +941,9 @@ function getFilt(){
   });
 }
 
-function renderCat(){
+let _rcTimer=null;
+function renderCat(){clearTimeout(_rcTimer);_rcTimer=setTimeout(_renderCat,60);}
+function _renderCat(){
   const items=getFilt(),inQ=new Set(Q.map(i=>i.id)),grid=document.getElementById('pgrd');
   document.getElementById('pct').textContent=items.length+' neumáticos';
   if(!items.length){grid.innerHTML='<div class="empty"><div class="ei">🔍</div>Sin resultados</div>';return;}
