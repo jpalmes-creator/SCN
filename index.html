@@ -634,7 +634,7 @@ tr:hover td{background:var(--g50);}
   <div style="background:white;border-radius:12px;width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25);">
     <div style="padding:16px 20px;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:15px;font-weight:700;" id="modal-fic-title">Nueva ficha técnica</span>
-      <button onclick="closeModal('modal-fic')" style="background:none;border:none;font-size:20px;color:var(--g400);cursor:pointer;">✕</button>
+      <button onclick="cancelFic()" style="background:none;border:none;font-size:20px;color:var(--g400);cursor:pointer;">✕</button>
     </div>
     <div style="padding:20px;">
       <input type="hidden" id="fic-edit-id">
@@ -677,7 +677,7 @@ tr:hover td{background:var(--g50);}
       </div>
       <div style="display:flex;gap:8px;margin-top:16px;">
         <button onclick="saveFic()" style="flex:1;padding:10px;background:var(--red);color:white;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;">Guardar ficha</button>
-        <button onclick="closeModal('modal-fic')" style="padding:10px 16px;background:white;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;cursor:pointer;">Cancelar</button>
+        <button onclick="cancelFic()" style="padding:10px 16px;background:white;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;cursor:pointer;">Cancelar</button>
       </div>
     </div>
   </div>
@@ -2005,6 +2005,15 @@ function rFic(list){
 function fFic(q){FIC_Q=q;rFic(FICHAS);}
 function setFicSeg(v,btn){FIC_SEG=v;document.querySelectorAll('#fic-seg-chips .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rFic(FICHAS);}
 
+function cancelFic(){
+  closeModal('modal-fic');
+  // Si veníamos del cotizador, volver a abrir el panel de fichas
+  if(_ficqReturnAfterSave){
+    _ficqReturnAfterSave=false;
+    setTimeout(renderFicQ,200);
+  }
+}
+
 async function upFicImg(event){
   const file=event.target.files[0];if(!file)return;
   showToast('Subiendo imagen…');
@@ -2037,6 +2046,9 @@ function ficSegChange(){
 
 let _ficqModels=[];
 async function openFicQ(){
+  // Cerrar cualquier modal abierto antes de abrir ficq
+  closeModal('modal-fic');
+  _ficqReturnAfterSave=false;
   const seen=new Set();
   _ficqModels=[];
   Q.filter(i=>i.tipo==='n').forEach(i=>{
@@ -2049,7 +2061,8 @@ async function openFicQ(){
 
 async function renderFicQ(){
   document.getElementById('modal-ficq')?.remove();
-  const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
+  let fichas=[];
+  try{const{data}=await sb.from('fichas_tecnicas').select('*');fichas=data||[];}catch(e){console.error('Error cargando fichas:',e);}
   const wrap=document.createElement('div');
   wrap.id='modal-ficq';
   wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;';
