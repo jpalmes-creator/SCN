@@ -659,7 +659,7 @@ tr:hover td{background:var(--g50);}
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Medida *</label><input id="fic-medida" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="295/80R22.5"></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Origen</label><input id="fic-origen" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="China, Corea, Japón…"></div>
         <!-- Campos neumático -->
-        <div id="fic-tire-fields" style="display:contents;">
+        <div id="fic-tire-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;grid-column:1/-1;">
           <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Telas (PR)</label><input id="fic-telas" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18PR"></div>
           <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Profundidad</label><input id="fic-prof" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18mm"></div>
           <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">LI/SS</label><input id="fic-liss" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="152/149M"></div>
@@ -1154,10 +1154,12 @@ function buildPDF(cot,items){
 <div style="font-size:9px;color:#475569;">Tel: 228448878 · +569 96321721</div>
 </td>
 <td style="vertical-align:middle;text-align:right;padding:12px 16px;" width="44%">
-<div style="display:inline-block;background:#C8102E;color:white;padding:10px 28px;border-radius:6px;text-align:center;margin-bottom:6px;">
-<div style="font-size:9px;font-weight:700;letter-spacing:.12em;">COTIZACIÓN</div>
-<div style="font-size:26px;font-weight:700;font-family:monospace;">#${cot.numero}</div></div>
-<div style="font-size:11px;color:#475569;text-align:right;">Fecha: <strong>${fecha}</strong></div>
+<table style="margin-left:auto;border-collapse:collapse;background:#C8102E;border-radius:6px;">
+<tr><td style="padding:10px 28px;text-align:center;">
+<div style="font-size:9px;font-weight:700;color:white;letter-spacing:.12em;text-transform:uppercase;">Cotización</div>
+<div style="font-size:26px;font-weight:700;color:white;">#${cot.numero}</div>
+</td></tr></table>
+<div style="font-size:11px;color:#475569;text-align:right;margin-top:5px;">Fecha: <strong>${fecha}</strong></div>
 </td></tr></table>
 <div style="background:#C8102E;height:3px;margin:10px 0;"></div>
 <table style="margin-bottom:10px;background:#F8FAFC;border:1px solid #E2E8F0;"><tr>
@@ -2079,11 +2081,7 @@ function ficSegChange(){
 function ficAplChange(){
   const apl=document.getElementById('fic-aplicacion').value;
   const isLlanta=apl==='LLANTA';
-  // Tire fields: toggle each child div individually (display:contents no soporta show/hide directo)
-  ['fic-telas','fic-prof','fic-liss','fic-peso','fic-iv'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.closest('div[style]').style.display=isLlanta?'none':'';
-  });
+  document.getElementById('fic-tire-fields').style.display=isLlanta?'none':'grid';
   document.getElementById('fic-llanta-fields').style.display=isLlanta?'block':'none';
 }
 
