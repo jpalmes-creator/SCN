@@ -652,25 +652,28 @@ tr:hover td{background:var(--g50);}
             <option value="DIRECCIONAL">Direccional</option><option value="TRACCION">Tracción</option><option value="MIXTO">Mixto</option><option value="FAENERO">Faenero</option>
           </select>
         </div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Medida *</label><input id="fic-medida" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="295/80R22.5"></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Origen</label><input id="fic-origen" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="China, Corea, Japón…"></div>
-        <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">URL imagen</label><input id="fic-img" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="https://..."></div>
-        <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Notas</label><input id="fic-notas" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Observaciones adicionales…"></div>
-        <div style="grid-column:1/-1;border-top:1.5px solid var(--g200);padding-top:12px;margin-top:4px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <label style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.05em;text-transform:uppercase;">📐 Especificaciones por medida</label>
-            <button type="button" onclick="addFicSpecRow()" style="padding:4px 10px;background:var(--red);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">+ Medida</button>
+        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Telas (PR)</label><input id="fic-telas" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18PR"></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Profundidad</label><input id="fic-prof" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18mm"></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">LI/SS</label><input id="fic-liss" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="152/149M"></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Peso (kg)</label><input id="fic-peso" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="51.73"></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Índice velocidad</label><input id="fic-iv" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="L, M, H"></div>
+        <div style="grid-column:1/-1;">
+          <label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:6px;">Imagen del modelo <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400);font-size:10px;">— se comparte entre todas las medidas</span></label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div id="fic-img-preview" style="width:72px;height:72px;border:1.5px dashed var(--g300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;background:var(--g50);">🛞</div>
+            <div style="flex:1;">
+              <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--navy);color:white;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:6px;">
+                📷 Subir foto
+                <input type="file" accept="image/*" style="display:none;" onchange="upFicImg(event)">
+              </label>
+              <div style="font-size:10px;color:var(--g400);">JPG, PNG, WEBP · máx 5MB</div>
+              <input type="hidden" id="fic-img">
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 24px;gap:3px;margin-bottom:4px;">
-            <span style="font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;">Medida</span>
-            <span style="font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;text-align:center;">Telas</span>
-            <span style="font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;text-align:center;">Profund.</span>
-            <span style="font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;text-align:center;">Peso kg</span>
-            <span style="font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;text-align:center;">IC/SS</span>
-            <span style="font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;text-align:center;">IV</span>
-            <span></span>
-          </div>
-          <div id="fic-specs-rows"></div>
         </div>
+        <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Notas</label><input id="fic-notas" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Observaciones adicionales…"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:16px;">
         <button onclick="saveFic()" style="flex:1;padding:10px;background:var(--red);color:white;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;">Guardar ficha</button>
@@ -1320,55 +1323,51 @@ async function sendEmailFromPreview() {
   }
 }
 
-function buildFichaPage(f, prods){
+function buildFichaPage(f, prods, allFichas){
   const posColor={DIRECCIONAL:'#1D4ED8',TRACCION:'#C2410C',MIXTO:'#7C3AED',FAENERO:'#065F46','CITY/TOURING':'#0369A1',SPORT:'#BE185D',SUV:'#047857','ALL TERRAIN':'#92400E','MUD TERRAIN':'#991B1B',COMERCIAL:'#6D28D9'};
   const posBg={DIRECCIONAL:'#EFF6FF',TRACCION:'#FFF7ED',MIXTO:'#F5F3FF',FAENERO:'#ECFDF5','CITY/TOURING':'#F0F9FF',SPORT:'#FDF2F8',SUV:'#ECFDF5','ALL TERRAIN':'#FFF7ED','MUD TERRAIN':'#FEF2F2',COMERCIAL:'#F5F3FF'};
   const pc=posColor[f.aplicacion]||'#64748B';
   const pb=posBg[f.aplicacion]||'#F1F5F9';
-  const img=f.imagen_url?`<img src="${f.imagen_url}" style="width:180px;height:180px;object-fit:contain;">`:'<div style="width:180px;height:180px;background:#F1F5F9;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:60px;">🛞</div>';
+  // Foto es por modelo — si esta ficha no tiene, buscar en otra del mismo modelo
+  const imgUrl=f.imagen_url||(allFichas||FICHAS||[]).find(x=>x.marca===f.marca&&x.modelo===f.modelo&&x.imagen_url)?.imagen_url||null;
+  const img=imgUrl?`<img src="${imgUrl}" style="width:180px;height:180px;object-fit:contain;">`:'<div style="width:180px;height:180px;background:#F1F5F9;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:60px;">🛞</div>';
   const isCamion=f.segmento==='CAMION';
-  // General specs
   let rows='';
   const addRow=(label,val,bg)=>{rows+=`<tr style="background:${bg?'#F8FAFC':'white'};"><td style="padding:8px 12px;font-size:10px;font-weight:700;color:#64748B;border-bottom:1px solid #E2E8F0;width:40%;">${label}</td><td style="padding:8px 12px;font-size:12px;font-weight:600;color:${val?'#0F172A':'#CBD5E1'};${val?'':'font-style:italic;'}border-bottom:1px solid #E2E8F0;">${val||'Por completar'}</td></tr>`;};
   addRow('Diseño (Modelo)',f.modelo,true);
   addRow('Aplicación',f.aplicacion,false);
   if(f.nombre_comercial)addRow('Línea',f.nombre_comercial,true);
-  if(f.origen)addRow('Origen',f.origen,true);
-  // Per-size specs: prefer fichas specs_por_medida, fall back to prods
-  const specRows=f.specs_por_medida?.length>0
-    ? f.specs_por_medida
-    : (prods||[]).filter((p,i,a)=>a.findIndex(x=>(x.medida||x.descripcion)===(p.medida||p.descripcion))===i)
-        .map(p=>({medida:p.medida,telas:p.telas,profundidad:p.profundidad,peso_kg:p.peso_kg,indice_carga:p.indice_carga,indice_velocidad:p.indice_velocidad}));
+  if(f.origen)addRow('Origen',f.origen,false);
+  // Single-medida specs (new schema: one ficha per medida)
+  const medida=f.medida||(prods?.[0]?.medida)||'';
+  const telas=f.telas||'';
+  const profundidad=f.profundidad||'';
+  const li_ss=f.li_ss||'';
+  const peso=f.peso||'';
+  const iv=f.indice_velocidad||'';
   let prodTable='';
-  if(specRows.length>0){
+  if(medida||telas||profundidad||li_ss||peso||iv){
     if(isCamion){
-      prodTable=`<div style="margin-top:14px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ESPECIFICACIONES POR MEDIDA</div>
+      prodTable=`<div style="margin-top:14px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ESPECIFICACIONES</div>
       <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#0F172A;color:white;"><th style="padding:6px 8px;text-align:left;">Medida</th><th style="padding:6px 8px;text-align:center;">Telas</th><th style="padding:6px 8px;text-align:center;">IC/SS</th><th style="padding:6px 8px;text-align:center;">Profundidad</th><th style="padding:6px 8px;text-align:center;">Peso</th></tr></thead><tbody>`;
-      specRows.forEach((s,i)=>{
-        const ic=(s.indice_carga||'')+(s.indice_velocidad||'');
-        prodTable+=`<tr style="background:${i%2===0?'white':'#F8FAFC'};border-bottom:1px solid #E2E8F0;">
-          <td style="padding:6px 8px;font-weight:600;">${s.medida||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${s.telas?'#0F172A':'#CBD5E1'};">${s.telas||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${ic?'#0F172A':'#CBD5E1'};">${ic||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${s.profundidad?'#0F172A':'#CBD5E1'};">${s.profundidad||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${s.peso_kg?'#0F172A':'#CBD5E1'};">${s.peso_kg?s.peso_kg+' kg':'—'}</td>
-        </tr>`;
-      });
-      prodTable+='</tbody></table></div>';
+      <thead><tr style="background:#0F172A;color:white;"><th style="padding:6px 8px;text-align:left;">Medida</th><th style="padding:6px 8px;text-align:center;">Telas</th><th style="padding:6px 8px;text-align:center;">IC/SS</th><th style="padding:6px 8px;text-align:center;">Profundidad</th><th style="padding:6px 8px;text-align:center;">Peso</th></tr></thead>
+      <tbody><tr style="background:white;border-bottom:1px solid #E2E8F0;">
+        <td style="padding:6px 8px;font-weight:600;">${medida||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${telas?'#0F172A':'#CBD5E1'};">${telas||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${li_ss?'#0F172A':'#CBD5E1'};">${li_ss||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${profundidad?'#0F172A':'#CBD5E1'};">${profundidad||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${peso?'#0F172A':'#CBD5E1'};">${peso?peso+' kg':'—'}</td>
+      </tr></tbody></table></div>`;
     } else {
-      prodTable=`<div style="margin-top:14px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ESPECIFICACIONES POR MEDIDA</div>
+      prodTable=`<div style="margin-top:14px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ESPECIFICACIONES</div>
       <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#0F172A;color:white;"><th style="padding:6px 8px;text-align:left;">Medida</th><th style="padding:6px 8px;text-align:center;">Índ. Carga</th><th style="padding:6px 8px;text-align:center;">Índ. Velocidad</th><th style="padding:6px 8px;text-align:center;">Peso</th></tr></thead><tbody>`;
-      specRows.forEach((s,i)=>{
-        prodTable+=`<tr style="background:${i%2===0?'white':'#F8FAFC'};border-bottom:1px solid #E2E8F0;">
-          <td style="padding:6px 8px;font-weight:600;">${s.medida||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${s.indice_carga?'#0F172A':'#CBD5E1'};">${s.indice_carga||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${s.indice_velocidad?'#0F172A':'#CBD5E1'};">${s.indice_velocidad||'—'}</td>
-          <td style="padding:6px 8px;text-align:center;color:${s.peso_kg?'#0F172A':'#CBD5E1'};">${s.peso_kg?s.peso_kg+' kg':'—'}</td>
-        </tr>`;
-      });
-      prodTable+='</tbody></table></div>';
+      <thead><tr style="background:#0F172A;color:white;"><th style="padding:6px 8px;text-align:left;">Medida</th><th style="padding:6px 8px;text-align:center;">LI/SS</th><th style="padding:6px 8px;text-align:center;">Índ. Velocidad</th><th style="padding:6px 8px;text-align:center;">Peso</th></tr></thead>
+      <tbody><tr style="background:white;border-bottom:1px solid #E2E8F0;">
+        <td style="padding:6px 8px;font-weight:600;">${medida||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${li_ss?'#0F172A':'#CBD5E1'};">${li_ss||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${iv?'#0F172A':'#CBD5E1'};">${iv||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:${peso?'#0F172A':'#CBD5E1'};">${peso?peso+' kg':'—'}</td>
+      </tr></tbody></table></div>`;
     }
   }
   if(f.notas)rows+=`<tr><td colspan="2" style="padding:8px 12px;font-size:11px;color:#64748B;background:#FFFBEB;">📝 ${f.notas}</td></tr>`;
@@ -1384,7 +1383,7 @@ function buildFichaPage(f, prods){
 <div style="background:#C8102E;height:3px;margin-bottom:14px;"></div>
 <div style="text-align:center;margin-bottom:10px;">
 <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:2px;">FICHA TÉCNICA</div>
-<div style="font-size:24px;font-weight:700;color:#0F172A;margin-top:2px;">${f.marca} <span style="color:#C8102E;">${f.modelo}</span></div>
+<div style="font-size:24px;font-weight:700;color:#0F172A;margin-top:2px;">${f.marca} <span style="color:#C8102E;">${f.modelo}</span>${medida?` <span style="font-size:16px;color:#64748B;">${medida}</span>`:''}</div>
 ${f.nombre_comercial?`<div style="font-size:13px;color:#64748B;">${f.nombre_comercial}</div>`:''}
 <div style="display:inline-block;background:${isCamion?'#0F172A':'#64748B'};color:white;padding:3px 12px;border-radius:10px;font-size:9px;font-weight:700;margin-top:4px;">${f.segmento}</div>
 </div>
@@ -1406,19 +1405,18 @@ async function genPDF(){
   const cot=await saveQ('borrador');
   if(!cot)return;
   const email = document.getElementById('qem').value||'';
-  // Get unique models from quoted products
+  // Get unique (marca+modelo+medida) combos from quoted products
   const modelMap={};
   Q.filter(i=>i.tipo==='n'&&i.prod.modelo&&i.prod.marca).forEach(i=>{
-    const key=i.prod.marca+'|'+i.prod.modelo;
-    if(!modelMap[key])modelMap[key]={marca:i.prod.marca,modelo:i.prod.modelo,prods:[]};
-    modelMap[key].prods.push(i.prod);
+    const key=i.prod.marca+'|'+i.prod.modelo+'|'+(i.prod.medida||'');
+    if(!modelMap[key])modelMap[key]={marca:i.prod.marca,modelo:i.prod.modelo,medida:i.prod.medida||'',prod:i.prod};
   });
   let fichasHTML='';
   if(Object.keys(modelMap).length>0){
     const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
     Object.values(modelMap).forEach(m=>{
-      const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo);
-      fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,segmento:m.prods[0]?.tipo_vehiculo||'CAMION',aplicacion:m.prods[0]?.tipo_uso||''},m.prods);
+      const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo&&(ft.medida||'')===(m.medida||''));
+      fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,medida:m.medida,segmento:m.prod.tipo_vehiculo||'CAMION',aplicacion:m.prod.tipo_uso||''},[m.prod],fichas);
     });
   }
   const pdfHTML=buildPDF({...cot,neto,iva,total:neto+iva},Q);
@@ -1618,12 +1616,12 @@ async function previewCot(id){
   const prodIds=[...new Set(items.map(i=>i.producto_id).filter(Boolean))];
   if(prodIds.length>0){
     const modelMap={};
-    prodIds.forEach(pid=>{const p=PRODS.find(x=>x.id===pid);if(p&&p.modelo&&p.marca){const k=p.marca+'|'+p.modelo;if(!modelMap[k])modelMap[k]={marca:p.marca,modelo:p.modelo,prods:[]};modelMap[k].prods.push(p);}});
+    prodIds.forEach(pid=>{const p=PRODS.find(x=>x.id===pid);if(p&&p.modelo&&p.marca){const k=p.marca+'|'+p.modelo+'|'+(p.medida||'');if(!modelMap[k])modelMap[k]={marca:p.marca,modelo:p.modelo,medida:p.medida||'',prod:p};}});
     if(Object.keys(modelMap).length>0){
       const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
       Object.values(modelMap).forEach(m=>{
-        const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo);
-        fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,segmento:m.prods[0]?.tipo_vehiculo||'CAMION',aplicacion:m.prods[0]?.tipo_uso||''},m.prods);
+        const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo&&(ft.medida||'')===(m.medida||''));
+        fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,medida:m.medida,segmento:m.prod.tipo_vehiculo||'CAMION',aplicacion:m.prod.tipo_uso||''},[m.prod],fichas);
       });
     }
   }
@@ -2007,6 +2005,25 @@ function rFic(list){
 function fFic(q){FIC_Q=q;rFic(FICHAS);}
 function setFicSeg(v,btn){FIC_SEG=v;document.querySelectorAll('#fic-seg-chips .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rFic(FICHAS);}
 
+async function upFicImg(event){
+  const file=event.target.files[0];if(!file)return;
+  showToast('Subiendo imagen…');
+  try{
+    const comp=await compImg(file,900);
+    const marca=(document.getElementById('fic-marca').value||'fic').toUpperCase().trim().replace(/\s+/g,'_');
+    const modelo=(document.getElementById('fic-modelo').value||'mod').toUpperCase().trim().replace(/\s+/g,'_');
+    const fn='fic_'+marca+'_'+modelo+'.jpg';
+    const{error:upErr}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',upsert:true});
+    if(upErr){showToast('Error al subir: '+upErr.message);return;}
+    const{data:ud}=sb.storage.from('fotos-neumaticos').getPublicUrl(fn);
+    const url=ud.publicUrl;
+    document.getElementById('fic-img').value=url;
+    const prev=document.getElementById('fic-img-preview');
+    prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+    showToast('✓ Imagen subida');
+  }catch(e){showToast('Error: '+e.message);}
+}
+
 function ficSegChange(){
   const seg=document.getElementById('fic-segmento').value;
   const isCamion=seg==='CAMION';
@@ -2023,8 +2040,8 @@ async function openFicQ(){
   const seen=new Set();
   _ficqModels=[];
   Q.filter(i=>i.tipo==='n').forEach(i=>{
-    const key=(i.prod.marca||'')+'|'+(i.prod.modelo||'');
-    if(!seen.has(key)){seen.add(key);_ficqModels.push({marca:i.prod.marca||'',modelo:i.prod.modelo||''});}
+    const key=(i.prod.marca||'')+'|'+(i.prod.modelo||'')+'|'+(i.prod.medida||'');
+    if(!seen.has(key)){seen.add(key);_ficqModels.push({marca:i.prod.marca||'',modelo:i.prod.modelo||'',medida:i.prod.medida||''});}
   });
   if(!_ficqModels.length){showToast('No hay neumáticos en la cotización');return;}
   await renderFicQ();
@@ -2037,20 +2054,23 @@ async function renderFicQ(){
   wrap.id='modal-ficq';
   wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;';
   const inner=document.createElement('div');
-  inner.style.cssText='background:white;border-radius:14px;width:min(500px,95vw);max-height:80vh;overflow-y:auto;padding:20px;';
+  inner.style.cssText='background:white;border-radius:14px;width:min(560px,95vw);max-height:80vh;overflow-y:auto;padding:20px;';
   inner.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
     <span style="font-size:15px;font-weight:700;">📑 Fichas técnicas de esta cotización</span>
     <button id="ficq-close" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;">✕</button>
   </div>`;
   _ficqModels.forEach((m,idx)=>{
-    const f=fichas?.find(x=>x.marca===m.marca&&x.modelo===m.modelo);
+    const f=fichas?.find(x=>x.marca===m.marca&&x.modelo===m.modelo&&(x.medida||'')===(m.medida||''));
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:8px;margin-bottom:8px;';
     const status=f
       ?'<span style="color:#16A34A;font-size:11px;font-weight:600;">✅ Completa</span>'
       :'<span style="color:#DC2626;font-size:11px;font-weight:600;">⚠️ Sin ficha</span>';
     row.innerHTML=`
-      <div><div style="font-weight:700;font-size:13px;">${m.marca||'—'}</div><div style="font-size:11px;color:#64748B;">${m.modelo||'Sin modelo'}</div></div>
+      <div>
+        <div style="font-weight:700;font-size:13px;">${m.marca||'—'} <span style="color:#C8102E;">${m.modelo||'Sin modelo'}</span></div>
+        <div style="font-size:11px;color:#64748B;">${m.medida||'Sin medida'}</div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;">${status}
         <button data-idx="${idx}" data-fid="${f?.id||''}" class="ficq-btn" style="padding:6px 12px;background:${f?'#2563EB':'#C8102E'};color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">${f?'✏️ Editar':'+ Crear'}</button>
       </div>`;
@@ -2067,13 +2087,11 @@ async function renderFicQ(){
       const m=_ficqModels[idx];
       wrap.remove();
       if(fid){
-        // Edit existing — fetch fresh
         const{data:f}=await sb.from('fichas_tecnicas').select('*').eq('id',fid).single();
         if(f){FICHAS=[...FICHAS.filter(x=>x.id!==f.id),f];openEditFic(f.id);}
       } else {
-        // Create new with pre-filled marca/modelo
         _ficqReturnAfterSave=true;
-        openFicModal(m.marca,m.modelo);
+        openFicModal(m.marca,m.modelo,m.medida);
       }
     };
   });
@@ -2081,17 +2099,20 @@ async function renderFicQ(){
 
 let _ficqReturnAfterSave=false;
 
-function openFicModal(marcaPre='',modeloPre=''){
+function openFicModal(marcaPre='',modeloPre='',medidaPre=''){
   document.getElementById('modal-fic-title').textContent='Nueva ficha técnica';
   document.getElementById('fic-edit-id').value='';
-  ['fic-marca','fic-modelo','fic-nombre','fic-origen','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('fic-specs-rows').innerHTML='';
+  ['fic-marca','fic-modelo','fic-medida','fic-nombre','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('fic-segmento').value='CAMION';
+  // Buscar si ya hay imagen del modelo para pre-mostrarla
+  const existImg=marcaPre&&modeloPre?FICHAS.find(x=>x.marca===marcaPre.toUpperCase()&&x.modelo===modeloPre.toUpperCase()&&x.imagen_url)?.imagen_url:null;
+  const prev=document.getElementById('fic-img-preview');
+  if(existImg){prev.innerHTML=`<img src="${existImg}" style="width:100%;height:100%;object-fit:cover;">`;document.getElementById('fic-img').value=existImg;}
+  else{prev.innerHTML='🛞';}
   ficSegChange();
-  // Pre-fill marca/modelo if provided (from cotizador)
   if(marcaPre) document.getElementById('fic-marca').value=marcaPre;
   if(modeloPre) document.getElementById('fic-modelo').value=modeloPre;
-  // Populate marca datalist
+  if(medidaPre) document.getElementById('fic-medida').value=medidaPre;
   const marcas=[...new Set(PRODS.map(p=>p.marca).filter(Boolean))].sort();
   document.getElementById('fic-marcas-dl').innerHTML=marcas.map(m=>`<option value="${m}">`).join('');
   openModal('modal-fic');
@@ -2099,68 +2120,61 @@ function openFicModal(marcaPre='',modeloPre=''){
 
 function openEditFic(id){
   const f=FICHAS.find(x=>x.id===id);if(!f)return;
-  document.getElementById('modal-fic-title').textContent='Editar ficha: '+f.marca+' '+f.modelo;
+  document.getElementById('modal-fic-title').textContent='Editar ficha: '+f.marca+' '+f.modelo+(f.medida?' '+f.medida:'');
   document.getElementById('fic-edit-id').value=f.id;
   document.getElementById('fic-marca').value=f.marca||'';
   document.getElementById('fic-modelo').value=f.modelo||'';
+  document.getElementById('fic-medida').value=f.medida||'';
   document.getElementById('fic-nombre').value=f.nombre_comercial||'';
   document.getElementById('fic-segmento').value=f.segmento||'CAMION';
   ficSegChange();
   document.getElementById('fic-aplicacion').value=f.aplicacion||'';
   document.getElementById('fic-origen').value=f.origen||'';
+  document.getElementById('fic-telas').value=f.telas||'';
+  document.getElementById('fic-prof').value=f.profundidad||'';
+  document.getElementById('fic-liss').value=f.li_ss||'';
+  document.getElementById('fic-peso').value=f.peso||'';
+  document.getElementById('fic-iv').value=f.indice_velocidad||'';
   document.getElementById('fic-img').value=f.imagen_url||'';
+  const prev=document.getElementById('fic-img-preview');
+  if(f.imagen_url){prev.innerHTML=`<img src="${f.imagen_url}" style="width:100%;height:100%;object-fit:cover;">`;}
+  else{prev.innerHTML='🛞';}
   document.getElementById('fic-notas').value=f.notas||'';
-  // Load per-size specs
-  document.getElementById('fic-specs-rows').innerHTML='';
-  (f.specs_por_medida||[]).forEach(s=>addFicSpecRow(s));
   const marcas=[...new Set(PRODS.map(p=>p.marca).filter(Boolean))].sort();
   document.getElementById('fic-marcas-dl').innerHTML=marcas.map(m=>`<option value="${m}">`).join('');
   openModal('modal-fic');
 }
 
-function addFicSpecRow(spec={}){
-  const row=document.createElement('div');
-  row.className='fic-spec-row';
-  row.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 24px;gap:3px;margin-bottom:4px;';
-  const inp=(cls,ph,val='')=>`<input class="${cls}" placeholder="${ph}" value="${val}" style="width:100%;padding:5px 7px;border:1.5px solid var(--g200);border-radius:5px;font-size:11px;outline:none;">`;
-  row.innerHTML=
-    inp('spec-medida','ej: 295/80R22.5',spec.medida||'')+
-    inp('spec-telas','16PR',spec.telas||'')+
-    inp('spec-prof','18mm',spec.profundidad||'')+
-    inp('spec-peso','51.7',spec.peso_kg||'')+
-    inp('spec-ic','152/149M',spec.indice_carga||'')+
-    inp('spec-iv','L, M, H',spec.indice_velocidad||'')+
-    `<button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--g400);font-size:14px;padding:0;">✕</button>`;
-  document.getElementById('fic-specs-rows').appendChild(row);
-}
-
 async function saveFic(){
   const id=document.getElementById('fic-edit-id').value;
-  const specs=[...document.querySelectorAll('#fic-specs-rows .fic-spec-row')].map(row=>({
-    medida:row.querySelector('.spec-medida').value.trim(),
-    telas:row.querySelector('.spec-telas').value.trim()||null,
-    profundidad:row.querySelector('.spec-prof').value.trim()||null,
-    peso_kg:row.querySelector('.spec-peso').value.trim()||null,
-    indice_carga:row.querySelector('.spec-ic').value.trim()||null,
-    indice_velocidad:row.querySelector('.spec-iv').value.trim()||null,
-  })).filter(s=>s.medida);
   const obj={
     marca:document.getElementById('fic-marca').value.toUpperCase().trim(),
     modelo:document.getElementById('fic-modelo').value.toUpperCase().trim(),
+    medida:document.getElementById('fic-medida').value.trim()||null,
     nombre_comercial:document.getElementById('fic-nombre').value.trim()||null,
     segmento:document.getElementById('fic-segmento').value,
     aplicacion:document.getElementById('fic-aplicacion').value,
     origen:document.getElementById('fic-origen').value.trim()||null,
+    telas:document.getElementById('fic-telas').value.trim()||null,
+    profundidad:document.getElementById('fic-prof').value.trim()||null,
+    li_ss:document.getElementById('fic-liss').value.trim()||null,
+    peso:document.getElementById('fic-peso').value.trim()||null,
+    indice_velocidad:document.getElementById('fic-iv').value.trim()||null,
     imagen_url:document.getElementById('fic-img').value.trim()||null,
     notas:document.getElementById('fic-notas').value.trim()||null,
-    specs_por_medida:specs,
     updated_at:new Date().toISOString(),
   };
   if(!obj.marca||!obj.modelo){showToast('Marca y modelo son obligatorios');return;}
   let error;
-  if(id){({error}=await sb.from('fichas_tecnicas').update(obj).eq('id',id));}
-  else{({error}=await sb.from('fichas_tecnicas').insert(obj));}
-  if(error){showToast('Error: '+error.message);return;}
+  try{
+    if(id){({error}=await sb.from('fichas_tecnicas').update(obj).eq('id',id));}
+    else{({error}=await sb.from('fichas_tecnicas').insert(obj));}
+  }catch(e){showToast('Error JS: '+e.message);console.error(e);return;}
+  if(error){showToast('❌ '+error.message);console.error('Supabase error:',error);return;}
+  // La foto es por modelo — sincronizar imagen_url a todas las fichas del mismo modelo
+  if(obj.imagen_url){
+    await sb.from('fichas_tecnicas').update({imagen_url:obj.imagen_url}).eq('marca',obj.marca).eq('modelo',obj.modelo);
+  }
   showToast(id?'✓ Ficha actualizada':'✓ Ficha creada');
   closeModal('modal-fic');
   loadFichas();
