@@ -481,8 +481,9 @@ tr:hover td{background:var(--g50);}
               <button onclick="setFS('si',this)">✅ Con stock</button>
               <button onclick="setFS('no',this)">❌ Sin stock</button>
             </div>
-            <div class="chips" id="bch"><button class="chip on" onclick="sb2('',this)">Todos</button></div>
-            <select class="mob-brand-sel" id="mob-brand" onchange="sb2mob(this.value)"><option value="">Todas las marcas</option></select>
+            <select id="bch-sel" onchange="sb2sel(this.value)" style="width:100%;padding:7px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:12px;font-family:var(--font);color:var(--g900);background:white;outline:none;margin-bottom:2px;"><option value="">Todas las marcas</option></select>
+            <div class="chips" id="bch" style="display:none"></div>
+            <select class="mob-brand-sel" id="mob-brand" style="display:none" onchange="sb2mob(this.value)"><option value="">Todas las marcas</option></select>
             <div class="chips tipo-chips" id="tch">
               <button class="chip on" onclick="st2('',this)">Todos</button>
             </div>
@@ -882,10 +883,9 @@ async function loadProds(){
   const{data}=await sb.from('productos').select('*').eq('es_servicio',false).eq('activo',true).order('marca');
   PRODS=(data||[]).map(p=>({...p,precio_venta:p.precio_venta>0?p.precio_venta:Math.round((p.costo_unitario||0)*1.35)}));
   const brands=[...new Set(PRODS.map(p=>p.marca).filter(Boolean))].sort();
-  document.getElementById('bch').innerHTML='<button class="chip on" onclick="sb2(\'\',this)">Todos</button>'+
-    brands.map(b=>`<button class="chip" onclick="sb2('${b}',this)">${b}</button>`).join('');
-  document.getElementById('mob-brand').innerHTML='<option value="">Todas las marcas</option>'+
-    brands.map(b=>'<option value="'+b+'">'+b+'</option>').join('');
+  const bSel=document.getElementById('bch-sel');
+  const curBrand=bSel?.value||'';
+  if(bSel)bSel.innerHTML='<option value="">Todas las marcas</option>'+brands.map(b=>`<option value="${b}"${b===curBrand?' selected':''}>${b}</option>`).join('');
   const tipos=[...new Set(PRODS.map(p=>p.tipo_uso).filter(Boolean))].sort();
   document.getElementById('tch').innerHTML='<button class="chip on" onclick="st2(\'\',this)">Todos</button>'+
     tipos.map(t=>{const tc=TCLASS(t);return `<button class="chip" onclick="st2('${t}',this)">${t}</button>`;}).join('');
@@ -981,8 +981,9 @@ function renderSvcs(){
 function TCLASS(t){return{DIRECCIONAL:'D',TRACCION:'T',MIXTO:'M',FAENERO:'F','CITY/TOURING':'CT',SPORT:'SP',SUV:'SV','ALL TERRAIN':'AT','MUD TERRAIN':'MT',COMERCIAL:'CO',LLANTA:'LL',CAMARA:'CA'}[t]||'OT';}
 function fp(){renderCat();}
 function setFS(v,btn){FS=v;document.querySelectorAll('#stk-tog button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderCat();}
-function sb2(v,btn){FB=v;document.querySelectorAll('#bch .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('mob-brand').value=v;renderCat();}
-function sb2mob(v){FB=v;document.querySelectorAll('#bch .chip').forEach(b=>b.classList.remove('on'));renderCat();}
+function sb2sel(v){FB=v;renderCat();}
+function sb2(v,btn){FB=v;renderCat();}
+function sb2mob(v){FB=v;renderCat();}
 function st2(v,btn){FT=v;document.querySelectorAll('#tch .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderCat();}
 function setTab(t,btn){
   document.getElementById('pn').style.display=t==='n'?'block':'none';
@@ -995,15 +996,19 @@ function setTab(t,btn){
 async function upPhoto(event,pid){
   const file=event.target.files[0];if(!file)return;
   showToast('Subiendo foto...');
-  const comp=await compImg(file,600);
-  const fn=pid+'_'+Date.now()+'.jpg';
-  const{error}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',upsert:true});
-  let url;
-  if(!error){const{data:ud}=sb.storage.from('fotos-neumaticos').getPublicUrl(fn);url=ud.publicUrl;}
-  else{url=await f2b64(comp);}
-  await sb.from('productos').update({foto_url:url}).eq('id',pid);
-  const p=PRODS.find(x=>x.id===pid);if(p)p.foto_url=url;
-  renderCat();showToast('✓ Foto guardada para todos');
+  try{
+    const comp=await compImg(file,800);
+    const fn='prod_'+pid+'.jpg';
+    const{error:upErr}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',upsert:true});
+    if(upErr){showToast('Error al subir: '+upErr.message);console.error('Storage error:',upErr);return;}
+    const{data:ud}=sb.storage.from('fotos-neumaticos').getPublicUrl(fn);
+    const url=ud.publicUrl;
+    const{error:dbErr}=await sb.from('productos').update({foto_url:url}).eq('id',pid);
+    if(dbErr){showToast('Error guardando URL: '+dbErr.message);return;}
+    const p=PRODS.find(x=>x.id===pid);if(p)p.foto_url=url;
+    renderCat();
+    showToast('✓ Foto guardada');
+  }catch(e){showToast('Error: '+e.message);console.error(e);}
 }
 function compImg(f,mx){return new Promise(res=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{const r=Math.min(mx/i.width,mx/i.height,1),c=document.createElement('canvas');c.width=i.width*r;c.height=i.height*r;c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>res(b),'image/jpeg',.85);};i.src=u;});}
 function f2b64(blob){return new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(blob);});}
