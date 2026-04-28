@@ -1215,7 +1215,13 @@ ${items.map((item,i)=>{
 let PREVIEW_PDF_HTML = '';
 function openPDF(html, email, num, showSend) {
   PREVIEW_PDF_HTML = html;
-  document.getElementById('pdf-preview-div').innerHTML = html;
+  // Usar iframe aislado para evitar que los estilos del PDF contaminen la app
+  const previewDiv = document.getElementById('pdf-preview-div');
+  previewDiv.innerHTML = '<iframe id="pdf-iframe" style="width:100%;height:100%;border:none;"></iframe>';
+  const iframe = document.getElementById('pdf-iframe');
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
   PREVIEW_EMAIL = email || '';
   PREVIEW_NUM   = num   || '';
   const sendBtn = document.getElementById('btn-send-email');
@@ -1228,6 +1234,9 @@ function openPDF(html, email, num, showSend) {
 function closePDFModal() {
   document.getElementById('pdf-modal').style.display = 'none';
   document.getElementById('pdf-preview-div').innerHTML = '';
+  // Limpiar carrito y sincronizar número de cotización al cerrar el PDF
+  clearQ(true);
+  loadQNum();
 }
 
 function initGmailToken() {}
@@ -1469,12 +1478,11 @@ async function genPDF(){
     const fullHTML=fichasHTML?pdfHTML.replace('</body></html>',fichasHTML+'</body></html>'):pdfHTML;
     openPDF(fullHTML,email,cot.numero,!!email);
     showToast('Vista previa lista'+(fichasHTML?' (con fichas técnicas)':''));
-    clearQ(true);
-    await loadQNum(); // re-sync quote number with DB for next quote
+    if(btn)btn.disabled=false; // re-habilitar (clearQ pasa al cerrar el modal)
   }catch(e){
     showToast('Error al generar PDF: '+e.message);
     console.error('genPDF error:',e);
-    if(btn&&Q.length)btn.disabled=false;
+    if(btn)btn.disabled=false;
   }
 }
 
