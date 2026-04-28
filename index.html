@@ -669,8 +669,11 @@ tr:hover td{background:var(--g50);}
         <div id="fic-llanta-fields" style="display:none;grid-column:1/-1;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">N° de agujeros</label><input id="fic-agujeros" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="8, 10, 6…"></div>
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Diámetro agujeros</label><input id="fic-diametro" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Ej: 14.5mm, 1/2"…"></div>
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Buje</label><input id="fic-buje" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Ej: 281.0mm"></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Material</label><input id="fic-material" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Acero, Aluminio…"></div>
-            <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Acabado</label><input id="fic-acabado" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Pintado, Natural, Cromado…"></div>
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Acabado</label><input id="fic-acabado" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Pintado, Natural, Cromado…"></div>
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Ensamble</label><input id="fic-ensamble" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Ej: ALCOA, ACCURIDE…"></div>
           </div>
         </div>
         <div style="grid-column:1/-1;">
@@ -1368,17 +1371,23 @@ function buildFichaPage(f, prods, allFichas){
   if(isLlanta){
     // Ficha de llanta
     const agujeros=f.numero_agujeros||'';
+    const diametro=f.diametro_agujeros||'';
+    const buje=f.buje||'';
     const material=f.material||'';
     const acabado=f.acabado||'';
-    if(medida||agujeros||material||acabado){
+    const ensamble=f.ensamble||'';
+    if(medida||agujeros||diametro||buje||material||acabado||ensamble){
       prodTable=`<div style="margin-top:10px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">ESPECIFICACIONES</div>
-      <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#0F172A;color:white;"><th style="padding:5px 8px;text-align:left;">Medida</th><th style="padding:5px 8px;text-align:center;">N° Agujeros</th><th style="padding:5px 8px;text-align:center;">Material</th><th style="padding:5px 8px;text-align:center;">Acabado</th></tr></thead>
+      <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:9px;">
+      <thead><tr style="background:#0F172A;color:white;"><th style="padding:4px 6px;text-align:left;">Medida</th><th style="padding:4px 6px;text-align:center;">N° Agujeros</th><th style="padding:4px 6px;text-align:center;">Diám. Agujeros</th><th style="padding:4px 6px;text-align:center;">Buje</th><th style="padding:4px 6px;text-align:center;">Material</th><th style="padding:4px 6px;text-align:center;">Acabado</th><th style="padding:4px 6px;text-align:center;">Ensamble</th></tr></thead>
       <tbody><tr style="background:white;">
-        <td style="padding:5px 8px;font-weight:600;">${medida||'—'}</td>
-        <td style="padding:5px 8px;text-align:center;color:${agujeros?'#0F172A':'#CBD5E1'};">${agujeros||'—'}</td>
-        <td style="padding:5px 8px;text-align:center;color:${material?'#0F172A':'#CBD5E1'};">${material||'—'}</td>
-        <td style="padding:5px 8px;text-align:center;color:${acabado?'#0F172A':'#CBD5E1'};">${acabado||'—'}</td>
+        <td style="padding:4px 6px;font-weight:600;">${medida||'—'}</td>
+        <td style="padding:4px 6px;text-align:center;color:${agujeros?'#0F172A':'#CBD5E1'};">${agujeros||'—'}</td>
+        <td style="padding:4px 6px;text-align:center;color:${diametro?'#0F172A':'#CBD5E1'};">${diametro||'—'}</td>
+        <td style="padding:4px 6px;text-align:center;color:${buje?'#0F172A':'#CBD5E1'};">${buje||'—'}</td>
+        <td style="padding:4px 6px;text-align:center;color:${material?'#0F172A':'#CBD5E1'};">${material||'—'}</td>
+        <td style="padding:4px 6px;text-align:center;color:${acabado?'#0F172A':'#CBD5E1'};">${acabado||'—'}</td>
+        <td style="padding:4px 6px;text-align:center;color:${ensamble?'#0F172A':'#CBD5E1'};">${ensamble||'—'}</td>
       </tr></tbody></table></div>`;
     }
   } else if(medida||telas||profundidad||li_ss||peso||iv){
@@ -2168,7 +2177,7 @@ let _ficqReturnAfterSave=false;
 function openFicModal(marcaPre='',modeloPre='',medidaPre=''){
   document.getElementById('modal-fic-title').textContent='Nueva ficha técnica';
   document.getElementById('fic-edit-id').value='';
-  ['fic-marca','fic-modelo','fic-medida','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-agujeros','fic-material','fic-acabado','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fic-marca','fic-modelo','fic-medida','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-agujeros','fic-diametro','fic-buje','fic-material','fic-acabado','fic-ensamble','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('fic-segmento').value='CAMION';
   // Buscar si ya hay imagen del modelo para pre-mostrarla
   const existImg=marcaPre&&modeloPre?FICHAS.find(x=>x.marca===marcaPre.toUpperCase()&&x.modelo===modeloPre.toUpperCase()&&x.imagen_url)?.imagen_url:null;
@@ -2201,8 +2210,11 @@ function openEditFic(id){
   document.getElementById('fic-peso').value=f.peso||'';
   document.getElementById('fic-iv').value=f.indice_velocidad||'';
   document.getElementById('fic-agujeros').value=f.numero_agujeros||'';
+  document.getElementById('fic-diametro').value=f.diametro_agujeros||'';
+  document.getElementById('fic-buje').value=f.buje||'';
   document.getElementById('fic-material').value=f.material||'';
   document.getElementById('fic-acabado').value=f.acabado||'';
+  document.getElementById('fic-ensamble').value=f.ensamble||'';
   document.getElementById('fic-img').value=f.imagen_url||'';
   const prev=document.getElementById('fic-img-preview');
   if(f.imagen_url){prev.innerHTML=`<img src="${f.imagen_url}" style="width:100%;height:100%;object-fit:cover;">`;}
@@ -2228,8 +2240,11 @@ async function saveFic(){
     peso:document.getElementById('fic-peso').value.trim()||null,
     indice_velocidad:document.getElementById('fic-iv').value.trim()||null,
     numero_agujeros:document.getElementById('fic-agujeros').value.trim()||null,
+    diametro_agujeros:document.getElementById('fic-diametro').value.trim()||null,
+    buje:document.getElementById('fic-buje').value.trim()||null,
     material:document.getElementById('fic-material').value.trim()||null,
     acabado:document.getElementById('fic-acabado').value.trim()||null,
+    ensamble:document.getElementById('fic-ensamble').value.trim()||null,
     imagen_url:document.getElementById('fic-img').value.trim()||null,
     notas:document.getElementById('fic-notas').value.trim()||null,
     updated_at:new Date().toISOString(),
