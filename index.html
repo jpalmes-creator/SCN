@@ -2010,9 +2010,6 @@ function setFicSeg(v,btn){FIC_SEG=v;document.querySelectorAll('#fic-seg-chips .c
 function ficSegChange(){
   const seg=document.getElementById('fic-segmento').value;
   const isCamion=seg==='CAMION';
-  document.getElementById('fic-telas-w').style.display=isCamion?'':'none';
-  document.getElementById('fic-prof-w').style.display=isCamion?'':'none';
-  document.getElementById('fic-iv-w').style.display=isCamion?'none':'';
   const aplSel=document.getElementById('fic-aplicacion');
   if(isCamion){
     aplSel.innerHTML='<option value="DIRECCIONAL">Direccional</option><option value="TRACCION">Tracción</option><option value="MIXTO">Mixto</option><option value="FAENERO">Faenero</option>';
