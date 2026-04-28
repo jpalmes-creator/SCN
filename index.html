@@ -652,17 +652,28 @@ tr:hover td{background:var(--g50);}
           </select>
         </div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Aplicación *</label>
-          <select id="fic-aplicacion" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;">
+          <select id="fic-aplicacion" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" onchange="ficAplChange()">
             <option value="DIRECCIONAL">Direccional</option><option value="TRACCION">Tracción</option><option value="MIXTO">Mixto</option><option value="FAENERO">Faenero</option>
           </select>
         </div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Medida *</label><input id="fic-medida" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="295/80R22.5"></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Origen</label><input id="fic-origen" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="China, Corea, Japón…"></div>
-        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Telas (PR)</label><input id="fic-telas" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18PR"></div>
-        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Profundidad</label><input id="fic-prof" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18mm"></div>
-        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">LI/SS</label><input id="fic-liss" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="152/149M"></div>
-        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Peso (kg)</label><input id="fic-peso" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="51.73"></div>
-        <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Índice velocidad</label><input id="fic-iv" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="L, M, H"></div>
+        <!-- Campos neumático -->
+        <div id="fic-tire-fields" style="display:contents;">
+          <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Telas (PR)</label><input id="fic-telas" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18PR"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Profundidad</label><input id="fic-prof" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="18mm"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">LI/SS</label><input id="fic-liss" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="152/149M"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Peso (kg)</label><input id="fic-peso" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="51.73"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Índice velocidad</label><input id="fic-iv" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="L, M, H"></div>
+        </div>
+        <!-- Campos llanta -->
+        <div id="fic-llanta-fields" style="display:none;grid-column:1/-1;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">N° de agujeros</label><input id="fic-agujeros" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="8, 10, 6…"></div>
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Material</label><input id="fic-material" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Acero, Aluminio…"></div>
+            <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Acabado</label><input id="fic-acabado" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Pintado, Natural, Cromado…"></div>
+          </div>
+        </div>
         <div style="grid-column:1/-1;">
           <label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:6px;">Imagen del modelo <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400);font-size:10px;">— se comparte entre todas las medidas</span></label>
           <div style="display:flex;align-items:center;gap:10px;">
@@ -1020,7 +1031,7 @@ async function upPhoto(event,pid){
     showToast('✓ Foto guardada');
   }catch(e){showToast('Error: '+e.message);console.error(e);}
 }
-function compImg(f,mx){return new Promise(res=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{const r=Math.min(mx/i.width,mx/i.height,1),c=document.createElement('canvas');c.width=i.width*r;c.height=i.height*r;c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>res(b),'image/jpeg',.85);};i.src=u;});}
+function compImg(f,mx){return new Promise((res,rej)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{const r=Math.min(mx/i.width,mx/i.height,1),c=document.createElement('canvas');c.width=Math.round(i.width*r);c.height=Math.round(i.height*r);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>{if(b)res(b);else rej(new Error('No se pudo comprimir la imagen'));},'image/jpeg',.85);};i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Formato de imagen no compatible. Usá JPG o PNG.'));};i.src=u;});}
 function f2b64(blob){return new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(blob);});}
 
 function addI(id,tipo){
@@ -1135,19 +1146,20 @@ function buildPDF(cot,items){
   const tc2={DIRECCIONAL:'#1D4ED8',TRACCION:'#C2410C',MIXTO:'#7C3AED',FAENERO:'#065F46','CITY/TOURING':'#0369A1',SPORT:'#BE185D',SUV:'#047857','ALL TERRAIN':'#92400E','MUD TERRAIN':'#991B1B',COMERCIAL:'#6D28D9',LLANTA:'#475569',CAMARA:'#475569'};
   const tb2={DIRECCIONAL:'#EFF6FF',TRACCION:'#FFF7ED',MIXTO:'#F5F3FF',FAENERO:'#ECFDF5','CITY/TOURING':'#F0F9FF',SPORT:'#FDF2F8',SUV:'#ECFDF5','ALL TERRAIN':'#FFF7ED','MUD TERRAIN':'#FEF2F2',COMERCIAL:'#F5F3FF',LLANTA:'#F1F5F9',CAMARA:'#F1F5F9'};
   return`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:12px;color:#0F172A;margin:0;padding:20px;}table{border-collapse:collapse;width:100%;}@media print{body{padding:0;}@page{margin:1cm;}}</style></head><body>
-<table style="margin-bottom:0;border-collapse:collapse;width:100%;"><tr>
-<td style="vertical-align:middle;padding:6px 0;" width="58%">
-<img src="${SCN_LOGO}" style="height:66px;object-fit:contain;display:block;">
-<div style="font-size:9px;color:#64748B;margin-top:3px;">Comercializadora de Neumáticos Ltda. · RUT: 77.205.630-3</div>
-<div style="font-size:9px;color:#64748B;">Carretera Gral. San Martín 9360 Bodega 6, Quilicura · Tel: 228448878 · +569 96321721</div>
+<table style="margin-bottom:0;border-collapse:collapse;width:100%;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:8px;"><tr>
+<td style="vertical-align:middle;padding:12px 16px;" width="56%">
+<img src="${SCN_LOGO}" style="height:62px;object-fit:contain;display:block;margin-bottom:5px;">
+<div style="font-size:9px;color:#475569;">Comercializadora de Neumáticos Ltda. · RUT: 77.205.630-3</div>
+<div style="font-size:9px;color:#475569;">Carretera Gral. San Martín 9360, Bodega 6, Quilicura</div>
+<div style="font-size:9px;color:#475569;">Tel: 228448878 · +569 96321721</div>
 </td>
-<td style="vertical-align:top;text-align:right;padding-left:8px;" width="42%">
-<div style="display:inline-block;background:#C8102E;color:white;padding:8px 20px;border-radius:6px;text-align:center;margin-bottom:5px;">
-<div style="font-size:9px;font-weight:700;letter-spacing:.1em;">COTIZACIÓN</div>
-<div style="font-size:22px;font-weight:700;font-family:monospace;">#${cot.numero}</div></div>
-<div style="background:#F1F5F9;border:1px solid #E2E8F0;padding:5px 20px;border-radius:6px;text-align:center;font-size:11px;color:#334155;">Fecha: <strong>${fecha}</strong></div>
+<td style="vertical-align:middle;text-align:right;padding:12px 16px;" width="44%">
+<div style="display:inline-block;background:#C8102E;color:white;padding:10px 28px;border-radius:6px;text-align:center;margin-bottom:6px;">
+<div style="font-size:9px;font-weight:700;letter-spacing:.12em;">COTIZACIÓN</div>
+<div style="font-size:26px;font-weight:700;font-family:monospace;">#${cot.numero}</div></div>
+<div style="font-size:11px;color:#475569;text-align:right;">Fecha: <strong>${fecha}</strong></div>
 </td></tr></table>
-<div style="background:#C8102E;height:3px;margin:8px 0 10px;"></div>
+<div style="background:#C8102E;height:3px;margin:10px 0;"></div>
 <table style="margin-bottom:10px;background:#F8FAFC;border:1px solid #E2E8F0;"><tr>
 <td style="padding:9px 14px;border-right:1px solid #E2E8F0;" width="40%"><div style="font-size:9px;font-weight:700;color:#64748B;margin-bottom:2px;">SEÑORES</div><div style="font-size:13px;font-weight:700;">${cot.cliente_nombre||'—'}</div></td>
 <td style="padding:9px 14px;border-right:1px solid #E2E8F0;" width="20%"><div style="font-size:9px;font-weight:700;color:#64748B;margin-bottom:2px;">RUT</div><div>${cot.cliente_rut||'—'}</div></td>
@@ -1350,28 +1362,45 @@ function buildFichaPage(f, prods, allFichas){
   const li_ss=f.li_ss||'';
   const peso=f.peso||'';
   const iv=f.indice_velocidad||'';
+  const isLlanta=f.aplicacion==='LLANTA';
   let prodTable='';
-  if(medida||telas||profundidad||li_ss||peso||iv){
-    if(isCamion){
-      prodTable=`<div style="margin-top:14px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ESPECIFICACIONES</div>
+  if(isLlanta){
+    // Ficha de llanta
+    const agujeros=f.numero_agujeros||'';
+    const material=f.material||'';
+    const acabado=f.acabado||'';
+    if(medida||agujeros||material||acabado){
+      prodTable=`<div style="margin-top:10px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">ESPECIFICACIONES</div>
       <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#0F172A;color:white;"><th style="padding:6px 8px;text-align:left;">Medida</th><th style="padding:6px 8px;text-align:center;">Telas</th><th style="padding:6px 8px;text-align:center;">IC/SS</th><th style="padding:6px 8px;text-align:center;">Profundidad</th><th style="padding:6px 8px;text-align:center;">Peso</th></tr></thead>
+      <thead><tr style="background:#0F172A;color:white;"><th style="padding:5px 8px;text-align:left;">Medida</th><th style="padding:5px 8px;text-align:center;">N° Agujeros</th><th style="padding:5px 8px;text-align:center;">Material</th><th style="padding:5px 8px;text-align:center;">Acabado</th></tr></thead>
+      <tbody><tr style="background:white;">
+        <td style="padding:5px 8px;font-weight:600;">${medida||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${agujeros?'#0F172A':'#CBD5E1'};">${agujeros||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${material?'#0F172A':'#CBD5E1'};">${material||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${acabado?'#0F172A':'#CBD5E1'};">${acabado||'—'}</td>
+      </tr></tbody></table></div>`;
+    }
+  } else if(medida||telas||profundidad||li_ss||peso||iv){
+    if(isCamion){
+      prodTable=`<div style="margin-top:10px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">ESPECIFICACIONES</div>
+      <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:#0F172A;color:white;"><th style="padding:5px 8px;text-align:left;">Medida</th><th style="padding:5px 8px;text-align:center;">Telas</th><th style="padding:5px 8px;text-align:center;">IC/SS</th><th style="padding:5px 8px;text-align:center;">Profundidad</th><th style="padding:5px 8px;text-align:center;">Peso</th></tr></thead>
       <tbody><tr style="background:white;border-bottom:1px solid #E2E8F0;">
-        <td style="padding:6px 8px;font-weight:600;">${medida||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${telas?'#0F172A':'#CBD5E1'};">${telas||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${li_ss?'#0F172A':'#CBD5E1'};">${li_ss||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${profundidad?'#0F172A':'#CBD5E1'};">${profundidad||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${peso?'#0F172A':'#CBD5E1'};">${peso?peso+' kg':'—'}</td>
+        <td style="padding:5px 8px;font-weight:600;">${medida||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${telas?'#0F172A':'#CBD5E1'};">${telas||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${li_ss?'#0F172A':'#CBD5E1'};">${li_ss||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${profundidad?'#0F172A':'#CBD5E1'};">${profundidad||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${peso?'#0F172A':'#CBD5E1'};">${peso?peso+' kg':'—'}</td>
       </tr></tbody></table></div>`;
     } else {
-      prodTable=`<div style="margin-top:14px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ESPECIFICACIONES</div>
+      prodTable=`<div style="margin-top:10px;"><div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">ESPECIFICACIONES</div>
       <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#0F172A;color:white;"><th style="padding:6px 8px;text-align:left;">Medida</th><th style="padding:6px 8px;text-align:center;">LI/SS</th><th style="padding:6px 8px;text-align:center;">Índ. Velocidad</th><th style="padding:6px 8px;text-align:center;">Peso</th></tr></thead>
+      <thead><tr style="background:#0F172A;color:white;"><th style="padding:5px 8px;text-align:left;">Medida</th><th style="padding:5px 8px;text-align:center;">LI/SS</th><th style="padding:5px 8px;text-align:center;">Índ. Velocidad</th><th style="padding:5px 8px;text-align:center;">Peso</th></tr></thead>
       <tbody><tr style="background:white;border-bottom:1px solid #E2E8F0;">
-        <td style="padding:6px 8px;font-weight:600;">${medida||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${li_ss?'#0F172A':'#CBD5E1'};">${li_ss||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${iv?'#0F172A':'#CBD5E1'};">${iv||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:${peso?'#0F172A':'#CBD5E1'};">${peso?peso+' kg':'—'}</td>
+        <td style="padding:5px 8px;font-weight:600;">${medida||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${li_ss?'#0F172A':'#CBD5E1'};">${li_ss||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${iv?'#0F172A':'#CBD5E1'};">${iv||'—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:${peso?'#0F172A':'#CBD5E1'};">${peso?peso+' kg':'—'}</td>
       </tr></tbody></table></div>`;
     }
   }
@@ -1389,10 +1418,10 @@ function buildFichaPage(f, prods, allFichas){
 </td></tr></table>
 <div style="background:#C8102E;height:2px;margin:8px 0;"></div>
 <table style="width:100%;border-collapse:collapse;"><tr>
-<td style="vertical-align:top;padding-right:12px;" width="22%">
-${imgUrl?`<img src="${imgUrl}" style="width:100%;max-width:110px;object-fit:contain;border-radius:6px;border:1px solid #E2E8F0;">`:'<div style="width:100%;max-width:110px;height:90px;background:#F1F5F9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:36px;">🛞</div>'}
+<td style="vertical-align:top;padding-right:14px;text-align:center;" width="30%">
+${imgUrl?`<img src="${imgUrl}" style="width:100%;max-width:160px;object-fit:contain;border-radius:8px;border:1px solid #E2E8F0;display:block;margin:0 auto;">`:'<div style="width:100%;height:130px;background:#F1F5F9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;">🛞</div>'}
 </td>
-<td style="vertical-align:top;" width="78%">
+<td style="vertical-align:top;" width="70%">
 <div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:2px;">${f.marca} <span style="color:#C8102E;">${f.modelo}</span>${medida?` <span style="font-size:12px;color:#64748B;font-weight:400;">${medida}</span>`:''}</div>
 ${f.nombre_comercial?`<div style="font-size:11px;color:#64748B;margin-bottom:6px;">${f.nombre_comercial}</div>`:'<div style="margin-bottom:4px;"></div>'}
 <table style="width:100%;border:1px solid #E2E8F0;border-collapse:collapse;font-size:10px;">${rows}</table>
@@ -2042,8 +2071,20 @@ function ficSegChange(){
   if(isCamion){
     aplSel.innerHTML='<option value="DIRECCIONAL">Direccional</option><option value="TRACCION">Tracción</option><option value="MIXTO">Mixto</option><option value="FAENERO">Faenero</option>';
   } else {
-    aplSel.innerHTML='<option value="CITY/TOURING">City/Touring</option><option value="SPORT">Sport</option><option value="SUV">SUV</option><option value="ALL TERRAIN">All Terrain</option><option value="MUD TERRAIN">Mud Terrain</option><option value="COMERCIAL">Comercial</option>';
+    aplSel.innerHTML='<option value="CITY/TOURING">City/Touring</option><option value="SPORT">Sport</option><option value="SUV">SUV</option><option value="ALL TERRAIN">All Terrain</option><option value="MUD TERRAIN">Mud Terrain</option><option value="COMERCIAL">Comercial</option><option value="LLANTA">Llanta</option>';
   }
+  ficAplChange();
+}
+
+function ficAplChange(){
+  const apl=document.getElementById('fic-aplicacion').value;
+  const isLlanta=apl==='LLANTA';
+  // Tire fields: toggle each child div individually (display:contents no soporta show/hide directo)
+  ['fic-telas','fic-prof','fic-liss','fic-peso','fic-iv'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.closest('div[style]').style.display=isLlanta?'none':'';
+  });
+  document.getElementById('fic-llanta-fields').style.display=isLlanta?'block':'none';
 }
 
 let _ficqModels=[];
@@ -2117,7 +2158,7 @@ let _ficqReturnAfterSave=false;
 function openFicModal(marcaPre='',modeloPre='',medidaPre=''){
   document.getElementById('modal-fic-title').textContent='Nueva ficha técnica';
   document.getElementById('fic-edit-id').value='';
-  ['fic-marca','fic-modelo','fic-medida','fic-nombre','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fic-marca','fic-modelo','fic-medida','fic-nombre','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-agujeros','fic-material','fic-acabado','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('fic-segmento').value='CAMION';
   // Buscar si ya hay imagen del modelo para pre-mostrarla
   const existImg=marcaPre&&modeloPre?FICHAS.find(x=>x.marca===marcaPre.toUpperCase()&&x.modelo===modeloPre.toUpperCase()&&x.imagen_url)?.imagen_url:null;
@@ -2144,12 +2185,16 @@ function openEditFic(id){
   document.getElementById('fic-segmento').value=f.segmento||'CAMION';
   ficSegChange();
   document.getElementById('fic-aplicacion').value=f.aplicacion||'';
+  ficAplChange();
   document.getElementById('fic-origen').value=f.origen||'';
   document.getElementById('fic-telas').value=f.telas||'';
   document.getElementById('fic-prof').value=f.profundidad||'';
   document.getElementById('fic-liss').value=f.li_ss||'';
   document.getElementById('fic-peso').value=f.peso||'';
   document.getElementById('fic-iv').value=f.indice_velocidad||'';
+  document.getElementById('fic-agujeros').value=f.numero_agujeros||'';
+  document.getElementById('fic-material').value=f.material||'';
+  document.getElementById('fic-acabado').value=f.acabado||'';
   document.getElementById('fic-img').value=f.imagen_url||'';
   const prev=document.getElementById('fic-img-preview');
   if(f.imagen_url){prev.innerHTML=`<img src="${f.imagen_url}" style="width:100%;height:100%;object-fit:cover;">`;}
@@ -2175,6 +2220,9 @@ async function saveFic(){
     li_ss:document.getElementById('fic-liss').value.trim()||null,
     peso:document.getElementById('fic-peso').value.trim()||null,
     indice_velocidad:document.getElementById('fic-iv').value.trim()||null,
+    numero_agujeros:document.getElementById('fic-agujeros').value.trim()||null,
+    material:document.getElementById('fic-material').value.trim()||null,
+    acabado:document.getElementById('fic-acabado').value.trim()||null,
     imagen_url:document.getElementById('fic-img').value.trim()||null,
     notas:document.getElementById('fic-notas').value.trim()||null,
     updated_at:new Date().toISOString(),
