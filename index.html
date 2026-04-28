@@ -645,7 +645,6 @@ tr:hover td{background:var(--g50);}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Marca *</label><input id="fic-marca" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="HANKOOK" list="fic-marcas-dl"><datalist id="fic-marcas-dl"></datalist></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Modelo *</label><input id="fic-modelo" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="AM09"></div>
-        <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Nombre comercial</label><input id="fic-nombre" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Smart Work AM09"></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Segmento *</label>
           <select id="fic-segmento" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" onchange="ficSegChange()">
             <option value="CAMION">Camión</option><option value="AUTO">Auto</option><option value="LLANTA">Llanta</option>
@@ -1433,30 +1432,41 @@ ${prodTable}
 }
 
 async function genPDF(){
-  const neto=Q.reduce((a,i)=>a+i.up*i.qty,0);
-  const iva=Math.round(neto*.19);
-  const cot=await saveQ('borrador');
-  if(!cot)return;
-  const email = document.getElementById('qem').value||'';
-  // Get unique (marca+modelo+medida) combos from quoted products
-  const modelMap={};
-  Q.filter(i=>i.tipo==='n'&&i.prod.modelo&&i.prod.marca).forEach(i=>{
-    const key=i.prod.marca+'|'+i.prod.modelo+'|'+(i.prod.medida||'');
-    if(!modelMap[key])modelMap[key]={marca:i.prod.marca,modelo:i.prod.modelo,medida:i.prod.medida||'',prod:i.prod};
-  });
-  let fichasHTML='';
-  if(Object.keys(modelMap).length>0){
-    const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
-    Object.values(modelMap).forEach(m=>{
-      const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo&&(ft.medida||'')===(m.medida||''));
-      fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,medida:m.medida,segmento:m.prod.tipo_vehiculo||'CAMION',aplicacion:m.prod.tipo_uso||''},[m.prod],fichas);
+  const btn=document.getElementById('bpdf');
+  if(btn)btn.disabled=true;
+  try{
+    const neto=Q.reduce((a,i)=>a+i.up*i.qty,0);
+    const iva=Math.round(neto*.19);
+    // Snapshot Q before any awaits (prevents race conditions on double-click)
+    const qSnap=[...Q];
+    const cot=await saveQ('borrador');
+    if(!cot){if(btn)btn.disabled=false;return;}
+    const email=document.getElementById('qem').value||'';
+    // Get unique (marca+modelo+medida) combos from quoted products
+    const modelMap={};
+    qSnap.filter(i=>i.tipo==='n'&&i.prod.modelo&&i.prod.marca).forEach(i=>{
+      const key=i.prod.marca+'|'+i.prod.modelo+'|'+(i.prod.medida||'');
+      if(!modelMap[key])modelMap[key]={marca:i.prod.marca,modelo:i.prod.modelo,medida:i.prod.medida||'',prod:i.prod};
     });
+    let fichasHTML='';
+    if(Object.keys(modelMap).length>0){
+      const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
+      Object.values(modelMap).forEach(m=>{
+        const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo&&(ft.medida||'')===(m.medida||''));
+        fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,medida:m.medida,segmento:m.prod.tipo_vehiculo||'CAMION',aplicacion:m.prod.tipo_uso||''},[m.prod],fichas);
+      });
+    }
+    const pdfHTML=buildPDF({...cot,neto,iva,total:neto+iva},qSnap);
+    const fullHTML=fichasHTML?pdfHTML.replace('</body></html>',fichasHTML+'</body></html>'):pdfHTML;
+    openPDF(fullHTML,email,cot.numero,!!email);
+    showToast('Vista previa lista'+(fichasHTML?' (con fichas técnicas)':''));
+    clearQ(true);
+    await loadQNum(); // re-sync quote number with DB for next quote
+  }catch(e){
+    showToast('Error al generar PDF: '+e.message);
+    console.error('genPDF error:',e);
+    if(btn&&Q.length)btn.disabled=false;
   }
-  const pdfHTML=buildPDF({...cot,neto,iva,total:neto+iva},Q);
-  const fullHTML=fichasHTML?pdfHTML.replace('</body></html>',fichasHTML+'</body></html>'):pdfHTML;
-  openPDF(fullHTML, email, cot.numero, !!email);
-  showToast('Vista previa lista'+(fichasHTML?' (con fichas técnicas)':''));
-  clearQ(true);
 }
 
 async function loadMis(){
@@ -2158,7 +2168,7 @@ let _ficqReturnAfterSave=false;
 function openFicModal(marcaPre='',modeloPre='',medidaPre=''){
   document.getElementById('modal-fic-title').textContent='Nueva ficha técnica';
   document.getElementById('fic-edit-id').value='';
-  ['fic-marca','fic-modelo','fic-medida','fic-nombre','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-agujeros','fic-material','fic-acabado','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fic-marca','fic-modelo','fic-medida','fic-origen','fic-telas','fic-prof','fic-liss','fic-peso','fic-iv','fic-agujeros','fic-material','fic-acabado','fic-img','fic-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('fic-segmento').value='CAMION';
   // Buscar si ya hay imagen del modelo para pre-mostrarla
   const existImg=marcaPre&&modeloPre?FICHAS.find(x=>x.marca===marcaPre.toUpperCase()&&x.modelo===modeloPre.toUpperCase()&&x.imagen_url)?.imagen_url:null;
@@ -2181,7 +2191,6 @@ function openEditFic(id){
   document.getElementById('fic-marca').value=f.marca||'';
   document.getElementById('fic-modelo').value=f.modelo||'';
   document.getElementById('fic-medida').value=f.medida||'';
-  document.getElementById('fic-nombre').value=f.nombre_comercial||'';
   document.getElementById('fic-segmento').value=f.segmento||'CAMION';
   ficSegChange();
   if(f.aplicacion)document.getElementById('fic-aplicacion').value=f.aplicacion;
@@ -2210,7 +2219,6 @@ async function saveFic(){
     marca:document.getElementById('fic-marca').value.toUpperCase().trim(),
     modelo:document.getElementById('fic-modelo').value.toUpperCase().trim(),
     medida:document.getElementById('fic-medida').value.trim()||null,
-    nombre_comercial:document.getElementById('fic-nombre').value.trim()||null,
     segmento:document.getElementById('fic-segmento').value,
     aplicacion:document.getElementById('fic-aplicacion').value,
     origen:document.getElementById('fic-origen').value.trim()||null,
