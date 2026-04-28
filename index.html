@@ -184,7 +184,9 @@ input,select{font-family:var(--font);}
 .qi-ctrl{display:flex;align-items:center;gap:3px;margin-top:3px;}
 .qcb{width:17px;height:17px;border-radius:4px;border:1px solid var(--g200);background:white;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .1s;}
 .qcb:hover{border-color:var(--red);color:var(--red);}
-.qcn{font-family:var(--mono);font-size:11px;font-weight:600;min-width:14px;text-align:center;}
+.qcn{font-family:var(--mono);font-size:11px;font-weight:600;width:32px;text-align:center;border:1px solid var(--g200);border-radius:4px;padding:1px 2px;-moz-appearance:textfield;}
+.qcn::-webkit-outer-spin-button,.qcn::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.qcn:focus{outline:none;border-color:var(--red);}
 .qi-r{text-align:right;min-width:68px;}
 .qi-sub{font-family:var(--mono);font-size:11px;font-weight:600;}
 .qi-rm{border:none;background:none;color:var(--g300);font-size:12px;padding:1px;display:block;margin-top:2px;transition:color .1s;}
@@ -866,7 +868,7 @@ async function onLogin(user){
   ME=user;
   for(let i=0;i<3;i++){
     const{data}=await sb.from('usuarios').select('*').eq('id',user.id).maybeSingle();
-    if(data){ROLE=data.rol;UNAME=data.nombre;break;}
+    if(data){ROLE=data.rol||'vendedor';UNAME=data.nombre||user.email.split('@')[0];break;}
     await new Promise(r=>setTimeout(r,500));
   }
   if(!ROLE){
@@ -1046,6 +1048,7 @@ function addI(id,tipo){
 }
 
 function chQty(id,d){const i=Q.find(x=>x.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)Q=Q.filter(x=>x.id!==id);rQ();renderCat();}
+function setQty(id,v){const i=Q.find(x=>x.id===id);if(!i)return;const qty=Math.max(1,parseInt(v)||1);if(qty===i.qty)return;i.qty=qty;rQ();renderCat();}
 function rmI(id){Q=Q.filter(i=>i.id!==id);rQ();renderCat();}
 function upP(id,v){const i=Q.find(x=>x.id===id);if(!i)return;i.up=parseFloat(v)||0;const el=document.getElementById('qs-'+id);if(el)el.textContent=$$(i.up*i.qty);rcTot();}
 function rcTot(){const n=Q.reduce((a,i)=>a+i.up*i.qty,0),iv=Math.round(n*.19);document.getElementById('tn2').textContent=$$(n);document.getElementById('ti').textContent=$$(iv);document.getElementById('tt').textContent=$$(n+iv);}
@@ -1071,7 +1074,7 @@ function rQ(){
           <input class="qi-pi" type="number" value="${item.up}" onchange="upP('${item.id}',this.value)" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--g200)'">
           <div class="qi-ctrl">
             <button class="qcb" onclick="chQty('${item.id}',-1)">−</button>
-            <span class="qcn">${item.qty}</span>
+            <input type="number" class="qcn" value="${item.qty}" min="1" onchange="setQty('${item.id}',this.value)" onclick="this.select()">
             <button class="qcb" onclick="chQty('${item.id}',1)">+</button>
           </div>
         </div>
@@ -1111,7 +1114,8 @@ function clearQ(force=false){
   if(!Q.length)return;
   if(!force&&!confirm('¿Limpiar la cotización?'))return;
   Q=[];['qcl','qrt','qat','qem'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  QNUM++;document.getElementById('qnum').textContent='#'+QNUM;
+  // QNUM ya se incrementa en saveQ() — acá solo refrescamos el display
+  document.getElementById('qnum').textContent='#'+QNUM;
   rQ();renderCat();
 }
 
@@ -1130,7 +1134,9 @@ async function saveQ(estado){
     cliente_contacto:at,cliente_email:em,forma_pago:pg,estado,
     neto,iva,total,creado_por:ME.id,
   }).select().single();
-  if(error){showToast('Error al guardar');return null;}
+  if(error){showToast('❌ '+error.message);console.error('saveQ error:',error);return null;}
+  // Avanzar QNUM apenas se guardó la cotización con éxito — evita conflicto si se llama saveQ otra vez antes de clearQ
+  QNUM++;document.getElementById('qnum').textContent='#'+QNUM;
   await sb.from('cotizacion_items').insert(Q.map(i=>({
     cotizacion_id:cot.id,
     producto_id:i.tipo==='n'?i.id:null,
@@ -1141,7 +1147,26 @@ async function saveQ(estado){
   return cot;
 }
 
-async function sendAppr(){const c=await saveQ('pendiente');if(c){showToast('✓ Enviada para aprobación');clearQ(true);loadABadge();}}
+async function sendAppr(){
+  const btn=document.getElementById('bapr');
+  if(btn)btn.disabled=true;
+  try{
+    const c=await saveQ('pendiente');
+    if(c){
+      showToast('✓ Enviada para aprobación');
+      clearQ(true);
+      await loadQNum(); // sincronizar número de cotización con la BD
+      const b=document.getElementById('nb-a');
+      if(b){const{count}=await sb.from('cotizaciones').select('id',{count:'exact',head:true}).eq('estado','pendiente');b.textContent=count||0;b.style.display=count?'inline-block':'none';}
+    } else {
+      if(btn)btn.disabled=false;
+    }
+  }catch(e){
+    showToast('Error: '+e.message);
+    console.error('sendAppr error:',e);
+    if(btn)btn.disabled=false;
+  }
+}
 
 function buildPDF(cot,items){
   const fecha=new Date(cot.created_at||Date.now()).toLocaleDateString('es-CL');
@@ -1234,9 +1259,12 @@ function openPDF(html, email, num, showSend) {
 function closePDFModal() {
   document.getElementById('pdf-modal').style.display = 'none';
   document.getElementById('pdf-preview-div').innerHTML = '';
-  // Limpiar carrito y sincronizar número de cotización al cerrar el PDF
-  clearQ(true);
-  loadQNum();
+  // Solo limpiar carrito automáticamente para admin/gerente (flujo PDF)
+  // Los vendedores limpian via sendAppr para poder seguir usando los botones
+  if(ROLE==='admin'||ROLE==='gerente'){
+    clearQ(true);
+    loadQNum();
+  }
 }
 
 function initGmailToken() {}
