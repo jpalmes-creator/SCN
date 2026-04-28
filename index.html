@@ -648,11 +648,11 @@ tr:hover td{background:var(--g50);}
         <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Nombre comercial</label><input id="fic-nombre" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Smart Work AM09"></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Segmento *</label>
           <select id="fic-segmento" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" onchange="ficSegChange()">
-            <option value="CAMION">Camión</option><option value="AUTO">Auto</option>
+            <option value="CAMION">Camión</option><option value="AUTO">Auto</option><option value="LLANTA">Llanta</option>
           </select>
         </div>
         <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Aplicación *</label>
-          <select id="fic-aplicacion" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" onchange="ficAplChange()">
+          <select id="fic-aplicacion" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;">
             <option value="DIRECCIONAL">Direccional</option><option value="TRACCION">Tracción</option><option value="MIXTO">Mixto</option><option value="FAENERO">Faenero</option>
           </select>
         </div>
@@ -1364,7 +1364,7 @@ function buildFichaPage(f, prods, allFichas){
   const li_ss=f.li_ss||'';
   const peso=f.peso||'';
   const iv=f.indice_velocidad||'';
-  const isLlanta=f.aplicacion==='LLANTA';
+  const isLlanta=f.segmento==='LLANTA'||f.aplicacion==='LLANTA';
   let prodTable='';
   if(isLlanta){
     // Ficha de llanta
@@ -2068,21 +2068,23 @@ async function upFicImg(event){
 
 function ficSegChange(){
   const seg=document.getElementById('fic-segmento').value;
-  const isCamion=seg==='CAMION';
   const aplSel=document.getElementById('fic-aplicacion');
-  if(isCamion){
+  const tireFields=document.getElementById('fic-tire-fields');
+  const llantaFields=document.getElementById('fic-llanta-fields');
+  if(seg==='CAMION'){
     aplSel.innerHTML='<option value="DIRECCIONAL">Direccional</option><option value="TRACCION">Tracción</option><option value="MIXTO">Mixto</option><option value="FAENERO">Faenero</option>';
+    tireFields.style.display='grid';
+    llantaFields.style.display='none';
+  } else if(seg==='AUTO'){
+    aplSel.innerHTML='<option value="CITY/TOURING">City/Touring</option><option value="SPORT">Sport</option><option value="SUV">SUV</option><option value="ALL TERRAIN">All Terrain</option><option value="MUD TERRAIN">Mud Terrain</option><option value="COMERCIAL">Comercial</option>';
+    tireFields.style.display='grid';
+    llantaFields.style.display='none';
   } else {
-    aplSel.innerHTML='<option value="CITY/TOURING">City/Touring</option><option value="SPORT">Sport</option><option value="SUV">SUV</option><option value="ALL TERRAIN">All Terrain</option><option value="MUD TERRAIN">Mud Terrain</option><option value="COMERCIAL">Comercial</option><option value="LLANTA">Llanta</option>';
+    // LLANTA
+    aplSel.innerHTML='<option value="LLANTA">Llanta</option>';
+    tireFields.style.display='none';
+    llantaFields.style.display='block';
   }
-  ficAplChange();
-}
-
-function ficAplChange(){
-  const apl=document.getElementById('fic-aplicacion').value;
-  const isLlanta=apl==='LLANTA';
-  document.getElementById('fic-tire-fields').style.display=isLlanta?'none':'grid';
-  document.getElementById('fic-llanta-fields').style.display=isLlanta?'block':'none';
 }
 
 let _ficqModels=[];
@@ -2182,8 +2184,7 @@ function openEditFic(id){
   document.getElementById('fic-nombre').value=f.nombre_comercial||'';
   document.getElementById('fic-segmento').value=f.segmento||'CAMION';
   ficSegChange();
-  document.getElementById('fic-aplicacion').value=f.aplicacion||'';
-  ficAplChange();
+  if(f.aplicacion)document.getElementById('fic-aplicacion').value=f.aplicacion;
   document.getElementById('fic-origen').value=f.origen||'';
   document.getElementById('fic-telas').value=f.telas||'';
   document.getElementById('fic-prof').value=f.profundidad||'';
