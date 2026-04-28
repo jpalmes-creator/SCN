@@ -2021,36 +2021,68 @@ function ficSegChange(){
   }
 }
 
+let _ficqModels=[];
 async function openFicQ(){
-  // Get unique marca+modelo from current quote (neumaticos only)
-  const models=[];
   const seen=new Set();
+  _ficqModels=[];
   Q.filter(i=>i.tipo==='n').forEach(i=>{
     const key=(i.prod.marca||'')+'|'+(i.prod.modelo||'');
-    if(!seen.has(key)&&(i.prod.marca||i.prod.modelo)){seen.add(key);models.push({marca:i.prod.marca||'',modelo:i.prod.modelo||''});}
+    if(!seen.has(key)){seen.add(key);_ficqModels.push({marca:i.prod.marca||'',modelo:i.prod.modelo||''});}
   });
-  if(!models.length){showToast('No hay neumáticos en la cotización');return;}
-  const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
-  let html=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;" id="modal-ficq">
-  <div style="background:white;border-radius:14px;width:min(480px,95vw);max-height:80vh;overflow-y:auto;padding:20px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <span style="font-size:15px;font-weight:700;">📑 Fichas técnicas de esta cotización</span>
-      <button onclick="document.getElementById('modal-ficq').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;">✕</button>
-    </div>`;
-  models.forEach(m=>{
-    const f=fichas?.find(x=>x.marca===m.marca&&x.modelo===m.modelo);
-    const status=f?'<span style="color:#16A34A;font-size:11px;font-weight:600;">✅ Completa</span>':'<span style="color:#DC2626;font-size:11px;font-weight:600;">⚠️ Sin ficha</span>';
-    const btn=f
-      ?`<button onclick="document.getElementById('modal-ficq').remove();openEditFic('${f.id}')" style="padding:6px 12px;background:var(--blue);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">✏️ Editar</button>`
-      :`<button onclick="document.getElementById('modal-ficq').remove();openFicModal('${m.marca}','${m.modelo}')" style="padding:6px 12px;background:var(--red);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">+ Crear</button>`;
-    html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--g200);border-radius:8px;margin-bottom:8px;">
-      <div><div style="font-weight:700;font-size:13px;">${m.marca}</div><div style="font-size:11px;color:var(--g500);">${m.modelo||'Sin modelo'}</div></div>
-      <div style="display:flex;align-items:center;gap:8px;">${status}${btn}</div>
-    </div>`;
-  });
-  html+=`</div></div>`;
-  document.body.insertAdjacentHTML('beforeend',html);
+  if(!_ficqModels.length){showToast('No hay neumáticos en la cotización');return;}
+  await renderFicQ();
 }
+
+async function renderFicQ(){
+  document.getElementById('modal-ficq')?.remove();
+  const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
+  const wrap=document.createElement('div');
+  wrap.id='modal-ficq';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;';
+  const inner=document.createElement('div');
+  inner.style.cssText='background:white;border-radius:14px;width:min(500px,95vw);max-height:80vh;overflow-y:auto;padding:20px;';
+  inner.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <span style="font-size:15px;font-weight:700;">📑 Fichas técnicas de esta cotización</span>
+    <button id="ficq-close" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;">✕</button>
+  </div>`;
+  _ficqModels.forEach((m,idx)=>{
+    const f=fichas?.find(x=>x.marca===m.marca&&x.modelo===m.modelo);
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:8px;margin-bottom:8px;';
+    const status=f
+      ?'<span style="color:#16A34A;font-size:11px;font-weight:600;">✅ Completa</span>'
+      :'<span style="color:#DC2626;font-size:11px;font-weight:600;">⚠️ Sin ficha</span>';
+    row.innerHTML=`
+      <div><div style="font-weight:700;font-size:13px;">${m.marca||'—'}</div><div style="font-size:11px;color:#64748B;">${m.modelo||'Sin modelo'}</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">${status}
+        <button data-idx="${idx}" data-fid="${f?.id||''}" class="ficq-btn" style="padding:6px 12px;background:${f?'#2563EB':'#C8102E'};color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">${f?'✏️ Editar':'+ Crear'}</button>
+      </div>`;
+    inner.appendChild(row);
+  });
+  wrap.appendChild(inner);
+  document.body.appendChild(wrap);
+  // Events
+  document.getElementById('ficq-close').onclick=()=>wrap.remove();
+  wrap.querySelectorAll('.ficq-btn').forEach(btn=>{
+    btn.onclick=async()=>{
+      const idx=parseInt(btn.dataset.idx);
+      const fid=btn.dataset.fid;
+      const m=_ficqModels[idx];
+      wrap.remove();
+      if(fid){
+        // Edit existing — fetch fresh
+        const{data:f}=await sb.from('fichas_tecnicas').select('*').eq('id',fid).single();
+        if(f){FICHAS=[...FICHAS.filter(x=>x.id!==f.id),f];openEditFic(f.id);}
+      } else {
+        // Create new with pre-filled marca/modelo
+        _ficqReturnAfterSave=true;
+        openFicModal(m.marca,m.modelo);
+      }
+    };
+  });
+}
+
+let _ficqReturnAfterSave=false;
 
 function openFicModal(marcaPre='',modeloPre=''){
   document.getElementById('modal-fic-title').textContent='Nueva ficha técnica';
@@ -2135,6 +2167,7 @@ async function saveFic(){
   showToast(id?'✓ Ficha actualizada':'✓ Ficha creada');
   closeModal('modal-fic');
   loadFichas();
+  if(_ficqReturnAfterSave){_ficqReturnAfterSave=false;setTimeout(renderFicQ,300);}
 }
 
 init();
