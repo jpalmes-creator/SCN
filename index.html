@@ -1120,6 +1120,7 @@ function clearQ(force=false){
 }
 
 async function saveQ(estado){
+  if(!ME||!ME.id){showToast('❌ Sesión inválida. Cerrá y volvé a iniciar sesión.');return null;}
   const cl=document.getElementById('qcl').value||'—';
   const rt=document.getElementById('qrt').value||'—';
   const at=document.getElementById('qat').value||'—';
@@ -1129,21 +1130,45 @@ async function saveQ(estado){
   const iva=Math.round(neto*.19);
   const total=neto+iva;
   const cr=CLIS.find(c=>c.nombre===cl);
-  const{data:cot,error}=await sb.from('cotizaciones').insert({
-    numero:QNUM,cliente_id:cr?.id||null,cliente_nombre:cl,cliente_rut:rt,
-    cliente_contacto:at,cliente_email:em,forma_pago:pg,estado,
-    neto,iva,total,creado_por:ME.id,
-  }).select().single();
-  if(error){showToast('❌ '+error.message);console.error('saveQ error:',error);return null;}
-  // Avanzar QNUM apenas se guardó la cotización con éxito — evita conflicto si se llama saveQ otra vez antes de clearQ
+  const payload={cliente_id:cr?.id||null,cliente_nombre:cl,cliente_rut:rt,cliente_contacto:at,cliente_email:em,forma_pago:pg,estado,neto,iva,total,creado_por:ME.id};
+  // Reintentar hasta 3 veces si el número está tomado (caso multi-usuario simultáneo)
+  let cot=null,lastError=null;
+  for(let attempt=0;attempt<3;attempt++){
+    const{data,error}=await sb.from('cotizaciones').insert({numero:QNUM,...payload}).select().single();
+    if(!error){cot=data;break;}
+    lastError=error;
+    // Si es duplicate key (numero ya existe), refrescar QNUM desde la BD y reintentar
+    if(error.code==='23505'||(error.message||'').includes('duplicate')){
+      console.warn('QNUM '+QNUM+' ya existe, reintentando con número fresco…');
+      await loadQNum();
+      continue;
+    }
+    // Si es FK violation en creado_por: usuario no está en tabla usuarios
+    if((error.message||'').includes('creado_por_fkey')||(error.message||'').includes('creado_por')){
+      showToast('❌ Tu usuario no está registrado en la tabla usuarios. Avisá al admin.');
+      console.error('FK error en creado_por. ME.id =',ME.id,'— hay que insertarlo en tabla usuarios.');
+      return null;
+    }
+    // Otro tipo de error: salir
+    break;
+  }
+  if(!cot){
+    const msg=lastError?lastError.message:'Error desconocido';
+    showToast('❌ '+msg);
+    console.error('saveQ falló tras reintentos:',lastError);
+    return null;
+  }
+  // Avanzar QNUM apenas se guardó la cotización con éxito
   QNUM++;document.getElementById('qnum').textContent='#'+QNUM;
-  await sb.from('cotizacion_items').insert(Q.map(i=>({
+  // Insertar items
+  const{error:itemsErr}=await sb.from('cotizacion_items').insert(Q.map(i=>({
     cotizacion_id:cot.id,
     producto_id:i.tipo==='n'?i.id:null,
     descripcion:i.tipo==='n'?i.prod.marca+' '+i.prod.descripcion:i.prod.nm,
     marca:i.tipo==='n'?i.prod.marca:'SERVICIO',
     cantidad:i.qty,precio_unit:i.up,total:i.up*i.qty,
   })));
+  if(itemsErr){console.error('Error insertando items (cotizacion ya guardada):',itemsErr);showToast('⚠️ Cotización guardada pero items fallaron: '+itemsErr.message);}
   return cot;
 }
 
