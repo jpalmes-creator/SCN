@@ -671,7 +671,7 @@ tr:hover td{background:var(--g50);}
         <div id="fic-llanta-fields" style="display:none;grid-column:1/-1;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">N° de agujeros</label><input id="fic-agujeros" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="8, 10, 6…"></div>
-            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Diámetro agujeros</label><input id="fic-diametro" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Ej: 14.5mm, 1/2"…"></div>
+            <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Diámetro agujeros</label><input id="fic-diametro" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Ej: 14.5mm, 1/2 pulg."></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Buje</label><input id="fic-buje" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Ej: 281.0mm"></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Material</label><input id="fic-material" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Acero, Aluminio…"></div>
             <div><label style="font-size:10px;font-weight:700;color:var(--g500);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Acabado</label><input id="fic-acabado" style="width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;outline:none;" placeholder="Pintado, Natural, Cromado…"></div>
@@ -794,9 +794,6 @@ tr:hover td{background:var(--g50);}
   </div>
 </div>
 
-  </main>
-</div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -815,6 +812,9 @@ let PRODS=[],SMAP={},CLIS=[];
 let Q=[],QNUM=74815,FB='',FT='',FS='';
 
 let PREVIEW_EMAIL = '', PREVIEW_NUM = '';
+let PREVIEW_PDF_HTML = '';
+let PREVIEW_SHOULD_CLEAR_Q = false;
+let QUOTE_BUSY = false;
 
 const SVCS=[
   {id:'s1',nm:'Montaje camión en taller',    pr:22000,ic:'🔧'},
@@ -928,7 +928,13 @@ async function loadSmap(){
 async function loadClis(){const{data}=await sb.from('clientes').select('*').order('nombre');CLIS=data||[];}
 function buildDL(){document.getElementById('cll').innerHTML=CLIS.map(c=>`<option value="${c.nombre}" data-rut="${c.rut}" data-em="${c.email||''}">`).join('');}
 function aFill(){const v=document.getElementById('qcl').value;const c=CLIS.find(x=>x.nombre===v);if(c){document.getElementById('qrt').value=c.rut||'';document.getElementById('qem').value=c.email||'';}}
-async function loadQNum(){const{data}=await sb.from('cotizaciones').select('numero').order('numero',{ascending:false}).limit(1);QNUM=data&&data.length?data[0].numero+1:74815;document.getElementById('qnum').textContent='#'+QNUM;}
+async function loadQNum(){
+  const{data,error}=await sb.from('cotizaciones').select('numero').order('numero',{ascending:false}).limit(1);
+  if(error){console.error('loadQNum error:',error);document.getElementById('qnum').textContent='#'+QNUM;return QNUM;}
+  QNUM=data&&data.length?Number(data[0].numero)+1:74815;
+  document.getElementById('qnum').textContent='#'+QNUM;
+  return QNUM;
+}
 async function loadABadge(){const{count}=await sb.from('cotizaciones').select('id',{count:'exact',head:true}).eq('estado','pendiente');const b=document.getElementById('nb-a');b.textContent=count||0;b.style.display=count?'inline-block':'none';}
 
 const PTITLES={cot:'Cotizador',mis:'Mis Cotizaciones',cli:'Clientes',stk:'Stock Disponible',apr:'Aprobaciones',dash:'Dashboard',pre:'Precios',all:'Todas las Cotizaciones',crit:'Stock Crítico',imp:'Importar Stock',fic:'Fichas Técnicas'};
@@ -1018,24 +1024,62 @@ function setTab(t,btn){
   if(t==='s')renderSvcs();
 }
 
+function cleanPathPart(v){
+  return String(v||'x').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_').replace(/_+/g,'_').slice(0,80);
+}
+function uniqueJpgPath(folder,prefix){
+  return folder+'/'+cleanPathPart(prefix)+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.jpg';
+}
+
 async function upPhoto(event,pid){
-  const file=event.target.files[0];if(!file)return;
+  const input=event.target;
+  const file=input.files&&input.files[0];if(!file)return;
+  input.disabled=true;
   showToast('Subiendo foto...');
   try{
     const comp=await compImg(file,800);
-    const fn='prod_'+pid+'.jpg';
-    const{error:upErr}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',upsert:true});
+    const fn=uniqueJpgPath('productos','prod_'+pid);
+    const{error:upErr}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',cacheControl:'3600',upsert:false});
     if(upErr){showToast('Error al subir: '+upErr.message);console.error('Storage error:',upErr);return;}
     const{data:ud}=sb.storage.from('fotos-neumaticos').getPublicUrl(fn);
     const url=ud.publicUrl;
     const{error:dbErr}=await sb.from('productos').update({foto_url:url}).eq('id',pid);
-    if(dbErr){showToast('Error guardando URL: '+dbErr.message);return;}
+    if(dbErr){showToast('Error guardando URL: '+dbErr.message);console.error('DB foto_url error:',dbErr);return;}
     const p=PRODS.find(x=>x.id===pid);if(p)p.foto_url=url;
     renderCat();
     showToast('✓ Foto guardada');
   }catch(e){showToast('Error: '+e.message);console.error(e);}
+  finally{input.value='';input.disabled=false;}
 }
-function compImg(f,mx){return new Promise((res,rej)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{const r=Math.min(mx/i.width,mx/i.height,1),c=document.createElement('canvas');c.width=Math.round(i.width*r);c.height=Math.round(i.height*r);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>{if(b)res(b);else rej(new Error('No se pudo comprimir la imagen'));},'image/jpeg',.85);};i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Formato de imagen no compatible. Usá JPG o PNG.'));};i.src=u;});}
+
+function compImg(f,mx){
+  return new Promise((res,rej)=>{
+    if(!f||!/^image\//.test(f.type||'')){rej(new Error('Seleccioná un archivo de imagen válido.'));return;}
+    const img=new Image();
+    const url=URL.createObjectURL(f);
+    let done=false;
+    const cleanup=()=>{if(!done){URL.revokeObjectURL(url);done=true;}img.onload=null;img.onerror=null;};
+    img.onload=()=>{
+      try{
+        const r=Math.min(mx/img.width,mx/img.height,1);
+        const c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(img.width*r));
+        c.height=Math.max(1,Math.round(img.height*r));
+        const ctx=c.getContext('2d');
+        if(!ctx)throw new Error('Canvas no disponible en este navegador.');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+        ctx.drawImage(img,0,0,c.width,c.height);
+        c.toBlob(b=>{
+          cleanup();
+          c.width=0;c.height=0;
+          if(b)res(b);else rej(new Error('No se pudo comprimir la imagen.'));
+        },'image/jpeg',.85);
+      }catch(err){cleanup();rej(err);}
+    };
+    img.onerror=()=>{cleanup();rej(new Error('Formato de imagen no compatible. Usá JPG, PNG o WEBP.'));};
+    img.src=url;
+  });
+}
 function f2b64(blob){return new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(blob);});}
 
 function addI(id,tipo){
@@ -1053,12 +1097,27 @@ function rmI(id){Q=Q.filter(i=>i.id!==id);rQ();renderCat();}
 function upP(id,v){const i=Q.find(x=>x.id===id);if(!i)return;i.up=parseFloat(v)||0;const el=document.getElementById('qs-'+id);if(el)el.textContent=$$(i.up*i.qty);rcTot();}
 function rcTot(){const n=Q.reduce((a,i)=>a+i.up*i.qty,0),iv=Math.round(n*.19);document.getElementById('tn2').textContent=$$(n);document.getElementById('ti').textContent=$$(iv);document.getElementById('tt').textContent=$$(n+iv);}
 
+function syncQuoteButtons(){
+  const hasItems=Q.length>0;
+  const bp=document.getElementById('bpdf'),ba=document.getElementById('bapr'),bf=document.getElementById('bfic');
+  if(bp)bp.disabled=QUOTE_BUSY||!hasItems;
+  if(ba)ba.disabled=QUOTE_BUSY||!hasItems;
+  if(bf)bf.disabled=QUOTE_BUSY||!hasItems;
+}
+function setQuoteBusy(busy){QUOTE_BUSY=!!busy;syncQuoteButtons();}
+function snapshotQ(){
+  return Q.map(i=>({id:i.id,tipo:i.tipo,qty:Math.max(1,parseInt(i.qty)||1),up:Number(i.up)||0,prod:{...i.prod}}));
+}
+function calcQuoteTotals(items){
+  const neto=(items||[]).reduce((a,i)=>a+(Number(i.up)||0)*(Number(i.qty)||0),0);
+  const iva=Math.round(neto*.19);
+  return {neto,iva,total:neto+iva};
+}
+
 function rQ(){
   const list=document.getElementById('qilist'),empty=document.getElementById('qpempty'),tots=document.getElementById('qtots');
-  const bp=document.getElementById('bpdf'),ba=document.getElementById('bapr');
-  const bf=document.getElementById('bfic');
-  if(!Q.length){empty.style.display='flex';list.innerHTML='';tots.style.display='none';bp.disabled=true;if(ba)ba.disabled=true;if(bf)bf.disabled=true;updateMobCart();return;}
-  empty.style.display='none';tots.style.display='block';bp.disabled=false;if(ba)ba.disabled=false;if(bf)bf.disabled=false;
+  if(!Q.length){empty.style.display='flex';list.innerHTML='';tots.style.display='none';syncQuoteButtons();updateMobCart();return;}
+  empty.style.display='none';tots.style.display='block';syncQuoteButtons();
   const neu=Q.filter(i=>i.tipo==='n'),svc=Q.filter(i=>i.tipo==='s');
   let h='';
   if(neu.length){
@@ -1110,46 +1169,51 @@ function rQ(){
   updateMobCart();
 }
 
-function clearQ(force=false){
-  if(!Q.length)return;
-  if(!force&&!confirm('¿Limpiar la cotización?'))return;
-  Q=[];['qcl','qrt','qat','qem'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  // QNUM ya se incrementa en saveQ() — acá solo refrescamos el display
-  document.getElementById('qnum').textContent='#'+QNUM;
+async function clearQ(force=false,opts={syncNum:true}){
+  const fields=['qcl','qrt','qat','qem'];
+  const hasForm=fields.some(id=>(document.getElementById(id)?.value||'').trim());
+  if(!force&&(Q.length||hasForm)&&!confirm('¿Limpiar la cotización?'))return false;
+  Q=[];
+  fields.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pg=document.getElementById('qpg');if(pg)pg.value='Contado';
+  PREVIEW_PDF_HTML='';PREVIEW_EMAIL='';PREVIEW_NUM='';PREVIEW_SHOULD_CLEAR_Q=false;
+  document.querySelector('.qp')?.classList.remove('mob-open');
   rQ();renderCat();
+  if(document.getElementById('ps')?.style.display!=='none')renderSvcs();
+  if(opts.syncNum!==false){try{await loadQNum();}catch(e){console.error('No se pudo sincronizar QNUM:',e);}}
+  return true;
 }
 
-async function saveQ(estado){
+async function saveQ(estado,qItems=null){
   if(!ME||!ME.id){showToast('❌ Sesión inválida. Cerrá y volvé a iniciar sesión.');return null;}
+  const items=(qItems&&qItems.length?qItems:snapshotQ()).map(i=>({id:i.id,tipo:i.tipo,qty:Math.max(1,parseInt(i.qty)||1),up:Number(i.up)||0,prod:{...i.prod}}));
+  if(!items.length){showToast('Agregá al menos un ítem antes de guardar.');return null;}
+
   const cl=document.getElementById('qcl').value||'—';
   const rt=document.getElementById('qrt').value||'—';
   const at=document.getElementById('qat').value||'—';
   const em=document.getElementById('qem').value||'';
   const pg=document.getElementById('qpg').value;
-  const neto=Q.reduce((a,i)=>a+i.up*i.qty,0);
-  const iva=Math.round(neto*.19);
-  const total=neto+iva;
+  const {neto,iva,total}=calcQuoteTotals(items);
   const cr=CLIS.find(c=>c.nombre===cl);
   const payload={cliente_id:cr?.id||null,cliente_nombre:cl,cliente_rut:rt,cliente_contacto:at,cliente_email:em,forma_pago:pg,estado,neto,iva,total,creado_por:ME.id};
-  // Reintentar hasta 3 veces si el número está tomado (caso multi-usuario simultáneo)
+
   let cot=null,lastError=null;
   for(let attempt=0;attempt<3;attempt++){
-    const{data,error}=await sb.from('cotizaciones').insert({numero:QNUM,...payload}).select().single();
+    const numero=QNUM;
+    const{data,error}=await sb.from('cotizaciones').insert({numero,...payload}).select().single();
     if(!error){cot=data;break;}
     lastError=error;
-    // Si es duplicate key (numero ya existe), refrescar QNUM desde la BD y reintentar
-    if(error.code==='23505'||(error.message||'').includes('duplicate')){
+    if(error.code==='23505'||(error.message||'').toLowerCase().includes('duplicate')){
       console.warn('QNUM '+QNUM+' ya existe, reintentando con número fresco…');
       await loadQNum();
       continue;
     }
-    // Si es FK violation en creado_por: usuario no está en tabla usuarios
     if((error.message||'').includes('creado_por_fkey')||(error.message||'').includes('creado_por')){
       showToast('❌ Tu usuario no está registrado en la tabla usuarios. Avisá al admin.');
       console.error('FK error en creado_por. ME.id =',ME.id,'— hay que insertarlo en tabla usuarios.');
       return null;
     }
-    // Otro tipo de error: salir
     break;
   }
   if(!cot){
@@ -1158,38 +1222,43 @@ async function saveQ(estado){
     console.error('saveQ falló tras reintentos:',lastError);
     return null;
   }
-  // Avanzar QNUM apenas se guardó la cotización con éxito
-  QNUM++;document.getElementById('qnum').textContent='#'+QNUM;
-  // Insertar items
-  const{error:itemsErr}=await sb.from('cotizacion_items').insert(Q.map(i=>({
+
+  QNUM=Math.max(QNUM,Number(cot.numero)+1);
+  document.getElementById('qnum').textContent='#'+QNUM;
+
+  const rows=items.map(i=>({
     cotizacion_id:cot.id,
     producto_id:i.tipo==='n'?i.id:null,
-    descripcion:i.tipo==='n'?i.prod.marca+' '+i.prod.descripcion:i.prod.nm,
+    descripcion:i.tipo==='n'?(i.prod.marca+' '+(i.prod.descripcion||'')):i.prod.nm,
     marca:i.tipo==='n'?i.prod.marca:'SERVICIO',
     cantidad:i.qty,precio_unit:i.up,total:i.up*i.qty,
-  })));
+  }));
+  const{error:itemsErr}=await sb.from('cotizacion_items').insert(rows);
   if(itemsErr){console.error('Error insertando items (cotizacion ya guardada):',itemsErr);showToast('⚠️ Cotización guardada pero items fallaron: '+itemsErr.message);}
-  return cot;
+  return {...cot,neto,iva,total};
 }
 
 async function sendAppr(){
+  if(QUOTE_BUSY)return;
+  const qSnap=snapshotQ();
+  if(!qSnap.length){showToast('Agregá productos o servicios antes de enviar.');return;}
   const btn=document.getElementById('bapr');
-  if(btn)btn.disabled=true;
+  const old=btn?btn.innerHTML:'';
+  setQuoteBusy(true);
+  if(btn)btn.textContent='Enviando...';
   try{
-    const c=await saveQ('pendiente');
+    const c=await saveQ('pendiente',qSnap);
     if(c){
       showToast('✓ Enviada para aprobación');
-      clearQ(true);
-      await loadQNum(); // sincronizar número de cotización con la BD
-      const b=document.getElementById('nb-a');
-      if(b){const{count}=await sb.from('cotizaciones').select('id',{count:'exact',head:true}).eq('estado','pendiente');b.textContent=count||0;b.style.display=count?'inline-block':'none';}
-    } else {
-      if(btn)btn.disabled=false;
+      await clearQ(true,{syncNum:true});
+      try{await loadABadge();}catch(e){console.error('loadABadge error:',e);}
     }
   }catch(e){
     showToast('Error: '+e.message);
     console.error('sendAppr error:',e);
-    if(btn)btn.disabled=false;
+  }finally{
+    if(btn)btn.innerHTML=old;
+    setQuoteBusy(false);
   }
 }
 
@@ -1262,34 +1331,40 @@ ${items.map((item,i)=>{
 </div></td></tr></table></body></html>`;
 }
 
-let PREVIEW_PDF_HTML = '';
-function openPDF(html, email, num, showSend) {
-  PREVIEW_PDF_HTML = html;
-  // Usar iframe aislado para evitar que los estilos del PDF contaminen la app
-  const previewDiv = document.getElementById('pdf-preview-div');
-  previewDiv.innerHTML = '<iframe id="pdf-iframe" style="width:100%;height:100%;border:none;"></iframe>';
-  const iframe = document.getElementById('pdf-iframe');
-  iframe.contentDocument.open();
-  iframe.contentDocument.write(html);
-  iframe.contentDocument.close();
+function openPDF(html, email='', num='', showSend=false, clearOnClose=false) {
+  PREVIEW_PDF_HTML = html || '';
   PREVIEW_EMAIL = email || '';
-  PREVIEW_NUM   = num   || '';
+  PREVIEW_NUM = num || '';
+  PREVIEW_SHOULD_CLEAR_Q = !!clearOnClose;
+
+  const downloadBtn=document.getElementById('btn-download-pdf');
+  if(downloadBtn){downloadBtn.disabled=false;downloadBtn.textContent='💾 PDF';}
   const sendBtn = document.getElementById('btn-send-email');
-  sendBtn.style.display = (showSend && email) ? 'inline-block' : 'none';
-  sendBtn.textContent = email ? '✉️ Enviar' : '✉️ Enviar';
+  if(sendBtn){
+    sendBtn.disabled=false;
+    sendBtn.style.display = (showSend && email) ? 'inline-block' : 'none';
+    sendBtn.textContent = '✉️ Enviar';
+  }
+
+  const previewDiv = document.getElementById('pdf-preview-div');
+  previewDiv.innerHTML = '<iframe id="pdf-iframe" sandbox="allow-same-origin" style="width:100%;height:100%;border:none;background:white;"></iframe>';
+  const iframe = document.getElementById('pdf-iframe');
+  iframe.srcdoc = PREVIEW_PDF_HTML;
+
   document.getElementById('pdf-modal-title').textContent = 'Cotización #' + (num||'');
   document.getElementById('pdf-modal').style.display = 'flex';
 }
 
-function closePDFModal() {
+async function closePDFModal() {
+  const shouldClear=PREVIEW_SHOULD_CLEAR_Q;
   document.getElementById('pdf-modal').style.display = 'none';
   document.getElementById('pdf-preview-div').innerHTML = '';
-  // Solo limpiar carrito automáticamente para admin/gerente (flujo PDF)
-  // Los vendedores limpian via sendAppr para poder seguir usando los botones
-  if(ROLE==='admin'||ROLE==='gerente'){
-    clearQ(true);
-    loadQNum();
-  }
+  PREVIEW_PDF_HTML='';PREVIEW_EMAIL='';PREVIEW_NUM='';PREVIEW_SHOULD_CLEAR_Q=false;
+  const sendBtn=document.getElementById('btn-send-email');
+  if(sendBtn){sendBtn.disabled=false;sendBtn.style.display='none';sendBtn.textContent='✉️ Enviar';}
+  const dlBtn=document.getElementById('btn-download-pdf');
+  if(dlBtn){dlBtn.disabled=false;dlBtn.textContent='💾 PDF';}
+  if(shouldClear)await clearQ(true,{syncNum:true});
 }
 
 function initGmailToken() {}
@@ -1503,17 +1578,17 @@ ${prodTable}
 }
 
 async function genPDF(){
+  if(QUOTE_BUSY)return;
+  const qSnap=snapshotQ();
+  if(!qSnap.length){showToast('Agregá productos o servicios antes de generar PDF.');return;}
   const btn=document.getElementById('bpdf');
-  if(btn)btn.disabled=true;
+  const old=btn?btn.innerHTML:'';
+  setQuoteBusy(true);
+  if(btn)btn.textContent='Generando...';
   try{
-    const neto=Q.reduce((a,i)=>a+i.up*i.qty,0);
-    const iva=Math.round(neto*.19);
-    // Snapshot Q before any awaits (prevents race conditions on double-click)
-    const qSnap=[...Q];
-    const cot=await saveQ('borrador');
-    if(!cot){if(btn)btn.disabled=false;return;}
-    const email=document.getElementById('qem').value||'';
-    // Get unique (marca+modelo+medida) combos from quoted products
+    const cot=await saveQ('borrador',qSnap);
+    if(!cot)return;
+    const email=document.getElementById('qem').value||cot.cliente_email||'';
     const modelMap={};
     qSnap.filter(i=>i.tipo==='n'&&i.prod.modelo&&i.prod.marca).forEach(i=>{
       const key=i.prod.marca+'|'+i.prod.modelo+'|'+(i.prod.medida||'');
@@ -1521,21 +1596,24 @@ async function genPDF(){
     });
     let fichasHTML='';
     if(Object.keys(modelMap).length>0){
-      const{data:fichas}=await sb.from('fichas_tecnicas').select('*');
+      const{data:fichas,error:fichasErr}=await sb.from('fichas_tecnicas').select('*');
+      if(fichasErr)console.error('Error cargando fichas para PDF:',fichasErr);
       Object.values(modelMap).forEach(m=>{
         const f=fichas?.find(ft=>ft.marca===m.marca&&ft.modelo===m.modelo&&(ft.medida||'')===(m.medida||''));
-        fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,medida:m.medida,segmento:m.prod.tipo_vehiculo||'CAMION',aplicacion:m.prod.tipo_uso||''},[m.prod],fichas);
+        fichasHTML+=buildFichaPage(f||{marca:m.marca,modelo:m.modelo,medida:m.medida,segmento:m.prod.tipo_vehiculo||'CAMION',aplicacion:m.prod.tipo_uso||''},[m.prod],fichas||[]);
       });
     }
-    const pdfHTML=buildPDF({...cot,neto,iva,total:neto+iva},qSnap);
+    const totals=calcQuoteTotals(qSnap);
+    const pdfHTML=buildPDF({...cot,...totals},qSnap);
     const fullHTML=fichasHTML?pdfHTML.replace('</body></html>',fichasHTML+'</body></html>'):pdfHTML;
-    openPDF(fullHTML,email,cot.numero,!!email);
+    openPDF(fullHTML,email,cot.numero,!!email,true);
     showToast('Vista previa lista'+(fichasHTML?' (con fichas técnicas)':''));
-    if(btn)btn.disabled=false; // re-habilitar (clearQ pasa al cerrar el modal)
   }catch(e){
     showToast('Error al generar PDF: '+e.message);
     console.error('genPDF error:',e);
-    if(btn)btn.disabled=false;
+  }finally{
+    if(btn)btn.innerHTML=old;
+    setQuoteBusy(false);
   }
 }
 
@@ -1808,6 +1886,7 @@ async function saveCli(){
 function openNewProd(){
   document.getElementById('modal-prod-title').textContent='Nuevo producto';
   document.getElementById('prod-edit-id').value='';
+  document.getElementById('prod-id').disabled=false;
   ['prod-desc','prod-marca','prod-medida','prod-id','prod-modelo','prod-telas','prod-prof','prod-ic','prod-iv','prod-peso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('prod-costo').value='';
   document.getElementById('prod-precio').value='';
@@ -2128,22 +2207,25 @@ function cancelFic(){
 }
 
 async function upFicImg(event){
-  const file=event.target.files[0];if(!file)return;
+  const input=event.target;
+  const file=input.files&&input.files[0];if(!file)return;
+  input.disabled=true;
   showToast('Subiendo imagen…');
   try{
     const comp=await compImg(file,900);
-    const marca=(document.getElementById('fic-marca').value||'fic').toUpperCase().trim().replace(/\s+/g,'_');
-    const modelo=(document.getElementById('fic-modelo').value||'mod').toUpperCase().trim().replace(/\s+/g,'_');
-    const fn='fic_'+marca+'_'+modelo+'.jpg';
-    const{error:upErr}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',upsert:true});
-    if(upErr){showToast('Error al subir: '+upErr.message);return;}
+    const marca=cleanPathPart((document.getElementById('fic-marca').value||'fic').toUpperCase().trim());
+    const modelo=cleanPathPart((document.getElementById('fic-modelo').value||'mod').toUpperCase().trim());
+    const fn=uniqueJpgPath('fichas','fic_'+marca+'_'+modelo);
+    const{error:upErr}=await sb.storage.from('fotos-neumaticos').upload(fn,comp,{contentType:'image/jpeg',cacheControl:'3600',upsert:false});
+    if(upErr){showToast('Error al subir: '+upErr.message);console.error('Storage ficha error:',upErr);return;}
     const{data:ud}=sb.storage.from('fotos-neumaticos').getPublicUrl(fn);
     const url=ud.publicUrl;
     document.getElementById('fic-img').value=url;
     const prev=document.getElementById('fic-img-preview');
     prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
     showToast('✓ Imagen subida');
-  }catch(e){showToast('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message);console.error(e);}
+  finally{input.value='';input.disabled=false;}
 }
 
 function ficSegChange(){
